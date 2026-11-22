@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { asset, gift } from './catalog.js';
-import { ProductCatalog, ProductDialog } from './ProductCatalog.jsx';
+import { asset, gift, selection } from './catalog.js';
+import { ProductCatalog, ProductPage, productPath } from './ProductCatalog.jsx';
 import './styles.css';
 
 const steps = [
@@ -60,18 +60,7 @@ function DemoMap({ disclosureRef }) {
 }
 
 function App() {
-  const [activeProduct, setActiveProduct] = useState(null);
   const mapRef = useRef(null);
-  const trigger = useRef(null);
-
-  useEffect(() => {
-    if (!activeProduct) trigger.current?.focus({ preventScroll: true });
-  }, [activeProduct]);
-
-  function openProduct(product) {
-    trigger.current = document.activeElement;
-    setActiveProduct(product);
-  }
 
   function openMap() {
     mapRef.current.open = true;
@@ -100,7 +89,7 @@ function App() {
               <p className="hero-note">Без покупки в магазине, регистрации и карты лояльности.</p>
               <div className="hero-actions">
                 <a className="button button-dark" href="#shops" onClick={openMap}>Где забрать подарок</a>
-                <button type="button" className="text-button" onClick={() => openProduct(gift)}>О бальзаме</button>
+                <a className="text-button" href={productPath(gift)}>О бальзаме</a>
               </div>
             </div>
             <div className="hero-art">
@@ -110,12 +99,14 @@ function App() {
             </div>
           </div>
         </section>
-        <ProductCatalog onProduct={openProduct} />
-        <section className="wrap section how" id="how" aria-labelledby="how-title">
-          <h2 id="how-title">Как получить подарок</h2>
-          <ol className="steps">
-            {steps.map(([title, text]) => <li key={title}><h3>{title}</h3><p>{text}</p></li>)}
-          </ol>
+        <ProductCatalog />
+        <section className="section how" id="how" aria-labelledby="how-title">
+          <div className="wrap how-layout">
+            <h2 id="how-title">Как получить подарок</h2>
+            <ol className="steps">
+              {steps.map(([title, text]) => <li key={title}><h3>{title}</h3><p>{text}</p></li>)}
+            </ol>
+          </div>
         </section>
         <section className="wrap section shops" id="shops" aria-labelledby="shops-title">
           <div className="section-heading">
@@ -139,9 +130,11 @@ function App() {
           </div>
         </div>
       </footer>
-      {activeProduct && <ProductDialog key={activeProduct.id} product={activeProduct} onClose={() => setActiveProduct(null)} />}
     </>
   );
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+const productId = new URLSearchParams(window.location.search).get('product');
+const product = [gift, ...selection].find(({ id }) => id === productId);
+if (product) document.title = `${product.brand} ${product.name} — Кофе и черешня`;
+createRoot(document.getElementById('root')).render(product ? <ProductPage product={product} /> : <App />);
