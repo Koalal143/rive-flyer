@@ -72,66 +72,80 @@ h1 { font-size: clamp(3rem, 4.7vw, 5.15rem); font-weight: 780; letter-spacing: -
 .sort { display: flex; gap: 9px; align-items: center; color: var(--muted); font-size: .88rem; }
 select { min-height: 42px; padding: .45rem .7rem; border-radius: 5px; border: 1px solid var(--line); background: var(--paper); }
 .selection { margin-top: clamp(18px, 3vw, 42px); }
-.product-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(12px, 1.8vw, 24px); }
+.selection h2 { font-size: clamp(2rem, 3.4vw, 3.4rem); letter-spacing: -.048em; }
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(14px, 2.15vw, 31px);
+}
 .product-card {
   display: grid;
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-rows: auto 1fr auto;
   min-width: 0;
-  padding: 0;
-  border: 1px solid #eae2e4;
-  border-radius: 8px;
-  background: #fff;
+  border-radius: 22px 22px 6px 6px;
+  color: #292125;
   text-align: left;
-  transition: border-color 160ms;
 }
 .product-media {
+  --product-tone: #f5edf0;
   position: relative;
   display: block;
-  aspect-ratio: 1.12;
+  aspect-ratio: .98;
   overflow: hidden;
-  border-radius: 8px 8px 0 0;
+  border-radius: 22px;
+  background: var(--product-tone);
 }
+.product-media::after, .gallery-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 12px 6px var(--photo-edge, var(--paper));
+  pointer-events: none;
+}
+.product-media--influence { --product-tone: #f1eef3; }
+.product-media--tangle { --product-tone: #f5ebee; }
+.product-media--celimax { --product-tone: #eff1ee; }
 .product-media img {
   position: absolute;
   inset: 0;
   margin: auto;
-  width: 81%;
-  height: 83%;
+  width: 80%;
+  height: 85%;
   object-fit: contain;
-  transition: transform 180ms;
+  mix-blend-mode: multiply;
 }
-.product-media--tangle img { height: 96%; }
-.product-media--celimax img { height: 84%; }
-.product-info { display: grid; align-content: start; gap: 4px; padding: 13px 16px 0; }
-.product-brand { font-size: .82rem; color: var(--muted); font-weight: 650; }
-.product-card .product-brand {
-  color: var(--ink);
-  font-size: .76rem;
+.product-media--influence img { width: 76%; height: 75%; }
+.product-media--celimax img { height: 88%; }
+.product-media--tangle img:first-child { inset-inline: 18% auto; width: 44%; height: 92%; }
+.product-media--tangle img + img { inset-inline: auto 20%; width: 28%; height: 87%; }
+.product-info { display: grid; align-content: start; gap: 4px; padding: 13px 1px 9px; }
+.product-brand { color: var(--muted); font-size: .78rem; font-weight: 600; }
+.product-name {
+  font-size: clamp(.97rem, 1.45vw, 1.18rem);
+  font-weight: 700;
+  line-height: 1.28;
+  letter-spacing: -.022em;
+  overflow-wrap: anywhere;
+}
+.product-price {
+  padding: 0 1px 4px;
+  font-size: clamp(.95rem, 1.4vw, 1.12rem);
   font-weight: 750;
-  letter-spacing: .045em;
-  text-transform: uppercase;
+  letter-spacing: -.02em;
+  white-space: nowrap;
 }
-.product-name { font-size: .97rem; font-weight: 550; line-height: 1.3; overflow-wrap: anywhere; }
-.product-type { color: var(--muted); line-height: 1.3; font-size: .84rem; }
-.product-price { padding: 14px 16px 11px; font-size: clamp(1.1rem, 1.7vw, 1.4rem); }
-.product-action {
-  display: block;
-  margin: 0 16px 15px;
-  padding: .55rem .4rem;
-  border: 1px solid #e3d7db;
-  border-radius: 4px;
-  font-size: .85rem;
-  font-weight: 680;
-  text-align: center;
-  transition: background-color 160ms, border-color 160ms;
+.product-card:focus-visible .product-name { color: var(--cherry); }
+@media (hover: hover) and (pointer: fine) {
+  .product-card:hover .product-name { color: var(--cherry); }
 }
-@media (hover: hover) {
-  .product-card:hover { border-color: #d5b8c3; }
-  .product-card:hover .product-media img { transform: scale(1.035); }
-  .product-card:hover .product-action { background: var(--petal); border-color: #e9cdd7; }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .product-media img { transition: transform 230ms cubic-bezier(.23, 1, .32, 1); }
+  .product-card:hover:not(:focus-visible) .product-media img { transform: scale(1.03); }
+  .product-card:active:not(:focus-visible) .product-media img { transform: scale(1.015); }
 }
 .fine-print { color: var(--muted); font-size: .84rem; line-height: 1.5; }
-.selection .fine-print { margin-top: 12px; }
+.selection .fine-print { margin-top: 16px; }
 
 .how { background: #f8eef1; padding-block: clamp(34px, 5vw, 76px); }
 .how-layout { display: grid; grid-template-columns: minmax(230px, .85fr) minmax(0, 1.15fr); gap: clamp(30px, 7vw, 100px); }
@@ -158,11 +172,12 @@ select { min-height: 42px; padding: .45rem .7rem; border-radius: 5px; border: 1p
   --detail-muted: #675e62;
   --detail-rule: #ebe2e6;
   --detail-photo: #f5ecef;
+  --photo-edge: #fff;
   --detail-accent: #793b54;
   --detail-ease-out: cubic-bezier(.23, 1, .32, 1);
   font-family: Manrope, "Segoe UI", Arial, sans-serif;
   color: var(--detail-ink);
-  background: #fff;
+  background: var(--photo-edge);
 }
 .detail-header { border-bottom: 1px solid var(--detail-rule); }
 .detail-header-inner {
@@ -201,10 +216,10 @@ select { min-height: 42px; padding: .45rem .7rem; border-radius: 5px; border: 1p
 }
 .gallery { grid-area: gallery; min-width: 0; }
 .gallery-frame {
+  position: relative;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   height: clamp(360px, 42vw, 590px);
-  border: 1px solid var(--detail-rule);
   background: radial-gradient(ellipse at 50% 35%, #fbf7f8 16%, var(--detail-photo) 98%);
   border-radius: 30px;
 }
@@ -360,10 +375,9 @@ select { min-height: 42px; padding: .45rem .7rem; border-radius: 5px; border: 1p
   .coffee { height: 80%; bottom: 9%; left: 16%; }
   .balm { height: 70%; bottom: 13%; right: 20%; }
   .section-heading { align-items: start; flex-direction: column; gap: 12px; margin-bottom: 15px; }
-  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px 12px; }
-  .product-info { padding: 10px 10px 0; }
-  .product-price { padding: 10px 10px 9px; }
-  .product-action { margin: 0 10px 10px; }
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 12px; }
+  .product-card, .product-media { border-radius: 16px; }
+  .product-info { padding-block: 10px 7px; }
   .how-layout { grid-template-columns: 1fr; gap: 22px; }
   .how h2 { max-width: none; }
   .steps li { grid-template-columns: 1.65rem 1fr; }

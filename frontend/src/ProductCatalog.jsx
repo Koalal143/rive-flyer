@@ -35,14 +35,13 @@ export function ProductCatalog() {
           <a className="product-card" key={product.id} href={productPath(product)}>
             <span className={`product-media product-media--${product.id}`}>
               <img src={product.photos[0]} alt="" loading="lazy" />
+              {product.id === 'tangle' && <img src={product.photos[1]} alt="" loading="lazy" />}
             </span>
             <span className="product-info">
-              <span className="product-brand">{product.brand}</span>
-              <span className="product-name">{product.name}</span>
-              <span className="product-type">{product.type}</span>
+              <span className="product-brand" lang="en">{product.brand}</span>
+              <span className="product-name" lang="en">{product.name}</span>
             </span>
             <strong className="product-price">{rubles.format(product.price)}</strong>
-            <span className="product-action" aria-hidden="true">Подробнее</span>
           </a>
         ))}
       </div>
