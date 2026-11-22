@@ -70,39 +70,73 @@ function App() {
     const ready = new WeakSet();
     const cardThreshold = 0.16;
     const flyerThreshold = 0.32;
+    let pendingHero;
+
+    function playReveal(element, frames, duration, delay = 0) {
+      const animation = element.animate(frames, {
+        duration,
+        delay,
+        easing: 'cubic-bezier(.22, .62, .31, 1)',
+        fill: 'backwards',
+      });
+      animation.id = 'scroll-reveal';
+    }
+
+    async function revealHero(target) {
+      const coffee = target.querySelector('.coffee');
+      const balm = target.querySelector('.balm');
+      const decoded = Promise.allSettled([coffee.decode(), balm.decode()]);
+      pendingHero = decoded;
+      await decoded;
+      if (pendingHero !== decoded || reducedMotion.matches) return;
+      pendingHero = null;
+
+      const resting = { opacity: 1, translate: '0 0', rotate: '0deg' };
+      playReveal(coffee, [{ opacity: 0, translate: '-14px 24px', rotate: '-5deg' }, resting], 820);
+      playReveal(balm, [{ opacity: 0, translate: '15px 19px', rotate: '8deg' }, resting], 740, 130);
+    }
+
     const observer = new IntersectionObserver((entries) => {
       for (const { isIntersecting, intersectionRatio, target } of entries) {
+        const kind = target.dataset.scrollReveal;
         if (!isIntersecting) {
           ready.add(target);
-          target.getAnimations().find(({ id }) => id === 'scroll-reveal')?.cancel();
+          if (kind === 'hero') pendingHero = null;
+          for (const animation of target.getAnimations({ subtree: kind === 'hero' })) {
+            if (animation.id === 'scroll-reveal') animation.cancel();
+          }
           continue;
         }
-        const isFlyer = target.dataset.scrollReveal === 'flyer';
-        const threshold = isFlyer ? flyerThreshold : cardThreshold;
+        const threshold = kind === 'flyer' ? flyerThreshold : cardThreshold;
         if (intersectionRatio < threshold || !ready.delete(target)) continue;
         if (reducedMotion.matches || target.matches(':focus-within')) continue;
 
+        if (kind === 'hero') {
+          void revealHero(target);
+          continue;
+        }
+
+        const isFlyer = kind === 'flyer';
         const delay = parseFloat(getComputedStyle(target).getPropertyValue('--reveal-delay')) || 0;
-        const animation = target.animate([
+        playReveal(target, [
           { opacity: 0, transform: isFlyer ? 'translateY(13px) scale(.95)' : 'translateY(14px)' },
           { opacity: 1, transform: 'none' },
-        ], {
-          duration: isFlyer ? 620 : 480,
-          delay,
-          easing: 'cubic-bezier(.22, .62, .31, 1)',
-          fill: 'backwards',
-        });
-        animation.id = 'scroll-reveal';
+        ], isFlyer ? 620 : 480, delay);
       }
     }, { threshold: [0, cardThreshold, flyerThreshold] });
 
     for (const target of mainRef.current.querySelectorAll('[data-scroll-reveal]')) {
       const rect = target.getBoundingClientRect();
-      if (rect.bottom <= 0 || rect.top >= window.innerHeight) ready.add(target);
+      if (target.dataset.scrollReveal === 'hero' || rect.bottom <= 0 || rect.top >= window.innerHeight) {
+        ready.add(target);
+      }
       observer.observe(target);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      pendingHero = null;
+      observer.disconnect();
+    };
   }, []);
 
   function openMap() {
@@ -137,7 +171,7 @@ function App() {
                 <a className="text-button" href={productPath(gift)}>О бальзаме</a>
               </div>
             </div>
-            <div className="hero-art">
+            <div className="hero-art" data-scroll-reveal="hero">
               <div className="hero-orbit" aria-hidden="true" />
               <img className="coffee" src={asset('coffee')} alt="Холодный кофе в розовом стакане" fetchPriority="high" />
               <img className="balm" src={asset('balm')} alt="Черешневый бальзам Eva Mosaic" fetchPriority="high" />
