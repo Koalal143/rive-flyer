@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Учебная акция: черешневый бальзам Eva Mosaic по флаеру из кофейни и бьюти-подборка РИВ ГОШ.">
+  <meta name="theme-color" content="#fffdfd">
+  <title>Кофе и черешня — учебный проект РИВ ГОШ</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="main.js" defer></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">К содержанию</a>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#top" aria-label="РИВ ГОШ — начало страницы">РИВ<span></span>ГОШ</a>
+      <nav aria-label="Навигация">
+        <a href="#how">Как получить</a>
+        <a href="#selection">Подборка</a>
+      </nav>
+      <a class="header-shop" href="#shops" data-open-map>Где забрать</a>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-content">
+        <p class="pilot-label"><span></span>Учебный эксперимент</p>
+        <h1 id="hero-title">Кофе с собой.<br>Бальзам<br class="hero-break"> в подарок.</h1>
+        <p class="hero-copy">Покажите флаер из кофейни и получите в РИВ ГОШ бальзам Eva Mosaic с ароматом черешни.</p>
+        <a class="button primary" href="#shops" data-open-map>Где забрать подарок</a>
+        <p class="hero-note">Без покупки в РИВ ГОШ, регистрации и карты лояльности.</p>
+      </div>
+      <div class="hero-art">
+        <div class="hero-orbit" aria-hidden="true"></div>
+        <img class="coffee" src="assets/coffee.webp" alt="Холодный кофе в розовом стакане" fetchpriority="high">
+        <img class="balm" src="assets/balm.webp" alt="Черешневый бальзам Eva Mosaic" fetchpriority="high">
+        <button class="gift-tag glass" type="button" data-product="eva">
+          <span>Бальзам в подарок</span>
+          <strong>Eva Mosaic Cherry</strong>
+          <span>Подробнее о бальзаме</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="section selection" id="selection" aria-labelledby="selection-title">
+      <div class="section-head">
+        <div>
+          <h2 id="selection-title">Бьюти-подборка</h2>
+          <p>Четыре находки из каталога РИВ ГОШ.</p>
+        </div>
+        <label class="sort">Порядок
+          <select id="sort-products">
+            <option value="default">Как в подборке</option>
+            <option value="asc">Сначала дешевле</option>
+            <option value="desc">Сначала дороже</option>
+          </select>
+        </label>
+      </div>
+      <div class="product-grid" id="product-grid">
+        <button type="button" class="product" data-product="holika" data-price="459">
+          <img src="assets/tint.webp" width="1080" height="1080" alt="" loading="lazy">
+          <span class="product-caption"><span>Тинт Holika Holika</span><strong>459 ₽</strong></span>
+        </button>
+        <button type="button" class="product" data-product="influence" data-price="509">
+          <img src="assets/highlighter.webp" width="1080" height="1080" alt="" loading="lazy">
+          <span class="product-caption"><span>Хайлайтер Influence Beauty</span><strong>509 ₽</strong></span>
+        </button>
+        <button type="button" class="product" data-product="tangle" data-price="1683">
+          <img src="assets/brush.webp" width="1080" height="1080" alt="" loading="lazy">
+          <span class="product-caption"><span>Расчёска Tangle Teezer</span><strong>1 683 ₽</strong></span>
+        </button>
+        <button type="button" class="product" data-product="celimax" data-price="1355">
+          <img src="assets/toner.webp" width="1080" height="1080" alt="" loading="lazy">
+          <span class="product-caption"><span>Тонер Celimax</span><strong>1 355 ₽</strong></span>
+        </button>
+      </div>
+      <p class="fine-print">Цены взяты из материалов проекта. Цены в магазинах могут отличаться.</p>
+    </section>
+
+    <section class="section how" id="how" aria-labelledby="how-title">
+      <h2 id="how-title">Как получить подарок</h2>
+      <ol class="steps">
+        <li><h3>Возьмите флаер</h3><p>Бариста выдаст бумажный флаер при покупке напитка, участвующего в акции.</p></li>
+        <li><h3>Найдите магазин</h3><p>Выберите участвующую точку РИВ ГОШ и возьмите флаер с собой.</p></li>
+        <li><h3>Покажите QR-код</h3><p>Сотрудник отсканирует QR-код на бумажном флаере и выдаст бальзам. Один флаер даёт право на один подарок.</p></li>
+      </ol>
+    </section>
+
+    <section class="section shops" id="shops" aria-labelledby="shops-title">
+      <div class="section-head">
+        <div>
+          <h2 id="shops-title">Где забрать подарок</h2>
+          <p>Список участвующих магазинов уточняется.</p>
+        </div>
+        <a class="button outline" href="https://rivegauche.ru/shops" target="_blank" rel="noopener noreferrer">Все магазины РИВ ГОШ</a>
+      </div>
+      <details class="map-disclosure" id="map-disclosure">
+        <summary>Посмотреть демо-карту</summary>
+        <div class="map-layout">
+          <div class="map-art" role="group" aria-label="Условная схема точек в Санкт-Петербурге">
+            <span class="map-city">Санкт-Петербург</span>
+            <span class="river" aria-hidden="true"></span>
+            <span class="road road-a" aria-hidden="true"></span>
+            <span class="road road-b" aria-hidden="true"></span>
+            <span class="road road-c" aria-hidden="true"></span>
+            <span class="road road-d" aria-hidden="true"></span>
+            <button type="button" class="pin pin-one" data-shop="center" aria-label="Точка 1, Центр" aria-pressed="true">1</button>
+            <button type="button" class="pin pin-two" data-shop="north" aria-label="Точка 2, Север" aria-pressed="false">2</button>
+            <button type="button" class="pin pin-three" data-shop="south" aria-label="Точка 3, Юг" aria-pressed="false">3</button>
+          </div>
+          <div class="map-panel">
+            <p class="demo-label">Демонстрационные данные</p>
+            <label for="shop-choice">Выберите точку</label>
+            <select id="shop-choice">
+              <option value="center">1. Центр</option>
+              <option value="north">2. Север</option>
+              <option value="south">3. Юг</option>
+            </select>
+            <p class="demo-stock" id="demo-stock" role="status">Тестовый остаток: 12 бальзамов</p>
+            <p class="fine-print">Схема показывает пример интерфейса. Адреса и остатки условные.</p>
+          </div>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div><a class="brand" href="#top" aria-label="РИВ ГОШ — начало страницы">РИВ<span></span>ГОШ</a><p>Учебный проект</p></div>
+      <div class="footer-links">
+        <a href="https://rivegauche.ru/" target="_blank" rel="noopener noreferrer">Сайт РИВ ГОШ</a>
+        <div class="app-links" aria-label="Магазины приложений">
+          <a href="https://apps.apple.com/ru/app/id1303445343" target="_blank" rel="noopener noreferrer">App Store</a>
+          <a href="https://play.google.com/store/apps/details?id=ru.rivegauche.app" target="_blank" rel="noopener noreferrer">Google Play</a>
+          <a href="https://www.rustore.ru/catalog/app/ru.rivegauche.app" target="_blank" rel="noopener noreferrer">RuStore</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <dialog class="product-dialog" id="product-dialog" aria-labelledby="product-name">
+    <div class="dialog-layout">
+      <form method="dialog" class="close-form"><button class="close" aria-label="Закрыть карточку" autofocus>×</button></form>
+      <div class="dialog-image"><img id="product-image" alt=""></div>
+      <div class="dialog-copy">
+        <p class="product-type" id="product-type"></p>
+        <h2 id="product-name"></h2>
+        <p id="product-description"></p>
+        <p class="dialog-price" id="product-price"></p>
+        <a class="button primary" id="product-link" target="_blank" rel="noopener noreferrer">На сайте РИВ ГОШ</a>
+      </div>
+    </div>
+  </dialog>
+</body>
+</html>
