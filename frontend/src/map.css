@@ -1,0 +1,41 @@
+.map-disclosure { border: 1px solid var(--line); border-radius: 18px; background: #fcf7f9; }
+.map-disclosure summary { padding: 18px 22px; cursor: pointer; font-weight: 700; }
+.map-disclosure summary::marker { color: var(--cherry); }
+.map-layout { display: grid; grid-template-columns: 1.65fr 1fr; gap: 22px; padding: 0 18px 18px; }
+.map-art {
+  position: relative;
+  min-height: 265px;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 12px;
+  background: repeating-linear-gradient(20deg, transparent 0 28px, #fff8 28px 31px), repeating-linear-gradient(105deg, #f0ebee 0 40px, #fff9 40px 44px);
+}
+.map-city { position: absolute; z-index: 1; top: 14px; left: 14px; padding: 6px 9px; border-radius: 6px; background: #fffdfde8; font-size: .83rem; }
+.river { position: absolute; inset: 0; background: #d4e4eb; clip-path: polygon(0 44%, 24% 54%, 40% 80%, 62% 70%, 80% 43%, 100% 47%, 100% 63%, 83% 61%, 66% 87%, 37% 100%, 19% 71%, 0 63%); }
+.road { position: absolute; width: 130%; height: 5px; background: #fff; transform-origin: 0; }
+.road-a { top: 52%; left: -5%; transform: rotate(-13deg); }
+.road-b { top: 12%; left: 5%; transform: rotate(18deg); }
+.road-c { top: -18%; left: 45%; transform: rotate(68deg); }
+.road-d { top: 111%; left: 18%; transform: rotate(-52deg); }
+.pin {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: #fff5f8;
+  color: var(--cherry);
+  font-weight: 750;
+  box-shadow: 0 2px 12px #63223d36;
+}
+.pin[aria-pressed="true"] { color: white; background: var(--cherry); }
+.pin-center { top: 39%; left: 46%; }
+.pin-north { top: 15%; left: 70%; }
+.pin-south { top: 65%; left: 23%; }
+.map-panel { display: grid; align-content: center; justify-items: start; gap: 9px; padding: 12px 16px 12px 0; }
+.demo-label { padding: 5px 9px; border-radius: 7px; color: #761e3d; background: var(--petal); font-size: .85rem; }
+.map-panel label { margin-top: 6px; font-weight: 700; }
+.demo-stock { margin-top: 5px; }
+
