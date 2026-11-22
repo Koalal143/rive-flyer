@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { asset, gift, selection } from './catalog.js';
 import { ProductCatalog, ProductPage, productPath } from './ProductCatalog.jsx';
@@ -61,6 +61,49 @@ function DemoMap({ disclosureRef }) {
 
 function App() {
   const mapRef = useRef(null);
+  const mainRef = useRef(null);
+
+  useEffect(() => {
+    if (!('IntersectionObserver' in window) || !Element.prototype.animate) return;
+
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    const ready = new WeakSet();
+    const cardThreshold = 0.16;
+    const flyerThreshold = 0.32;
+    const observer = new IntersectionObserver((entries) => {
+      for (const { isIntersecting, intersectionRatio, target } of entries) {
+        if (!isIntersecting) {
+          ready.add(target);
+          target.getAnimations().find(({ id }) => id === 'scroll-reveal')?.cancel();
+          continue;
+        }
+        const isFlyer = target.dataset.scrollReveal === 'flyer';
+        const threshold = isFlyer ? flyerThreshold : cardThreshold;
+        if (intersectionRatio < threshold || !ready.delete(target)) continue;
+        if (reducedMotion.matches || target.matches(':focus-within')) continue;
+
+        const delay = parseFloat(getComputedStyle(target).getPropertyValue('--reveal-delay')) || 0;
+        const animation = target.animate([
+          { opacity: 0, transform: isFlyer ? 'translateY(13px) scale(.95)' : 'translateY(14px)' },
+          { opacity: 1, transform: 'none' },
+        ], {
+          duration: isFlyer ? 620 : 480,
+          delay,
+          easing: 'cubic-bezier(.22, .62, .31, 1)',
+          fill: 'backwards',
+        });
+        animation.id = 'scroll-reveal';
+      }
+    }, { threshold: [0, cardThreshold, flyerThreshold] });
+
+    for (const target of mainRef.current.querySelectorAll('[data-scroll-reveal]')) {
+      const rect = target.getBoundingClientRect();
+      if (rect.bottom <= 0 || rect.top >= window.innerHeight) ready.add(target);
+      observer.observe(target);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   function openMap() {
     mapRef.current.open = true;
@@ -79,7 +122,9 @@ function App() {
           <a className="header-shop" href="#shops" onClick={openMap}>Где забрать</a>
         </div>
       </header>
-      <main id="main">
+      <main id="main" ref={mainRef} onFocus={(event) => {
+        event.target.getAnimations?.().find(({ id }) => id === 'scroll-reveal')?.cancel();
+      }}>
         <section className="hero" aria-labelledby="hero-title">
           <div className="wrap hero-layout">
             <div className="hero-content">
@@ -102,7 +147,15 @@ function App() {
         <ProductCatalog />
         <section className="section how" id="how" aria-labelledby="how-title">
           <div className="wrap how-layout">
-            <h2 id="how-title">Как получить подарок</h2>
+            <div className="how-intro">
+              <h2 id="how-title">Как получить подарок</h2>
+              <span className="how-flyer" aria-hidden="true" data-scroll-reveal="flyer">
+                <span className="how-flyer-ticket">
+                  <span className="how-flyer-print" />
+                  <span className="how-flyer-code" />
+                </span>
+              </span>
+            </div>
             <ol className="steps">
               {steps.map(([title, text]) => <li key={title}><h3>{title}</h3><p>{text}</p></li>)}
             </ol>
