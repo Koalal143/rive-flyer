@@ -32,7 +32,7 @@ export function ProductCatalog() {
       </div>
       <div className="product-grid">
         {products.map((product) => (
-          <a className="product-card" key={product.id} href={productPath(product)} data-scroll-reveal="">
+          <a className="product-card" key={product.id} href={productPath(product)} data-scroll-reveal="" data-analytics-product={product.id}>
             <span className={`product-media product-media--${product.id}`}>
               <img src={product.photos[0]} alt="" loading="lazy" />
               {product.id === 'tangle' && <img src={product.photos[1]} alt="" loading="lazy" />}

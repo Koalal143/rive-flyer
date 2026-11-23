@@ -1,9 +1,17 @@
 services:
   backend:
     build: ./backend
+    depends_on:
+      analytics-db:
+        condition: service_healthy
     environment:
       YANDEX_MAPS_API_KEY: ${YANDEX_MAPS_API_KEY:-}
       YANDEX_SEARCH_API_KEY: ${YANDEX_SEARCH_API_KEY:-}
+      STORE_CATALOG_PATH: ${STORE_CATALOG_PATH:-}
+      ANALYTICS_DB_HOST: analytics-db
+      ANALYTICS_DB_PASSWORD: ${ANALYTICS_DB_PASSWORD:-local-analytics-writer}
+    volumes:
+      - ./backend/data:/app/data:ro
     healthcheck:
       test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/api/maps/config', timeout=2).close()"]
       interval: 5s
@@ -16,3 +24,42 @@ services:
         condition: service_healthy
     ports:
       - "80:80"
+  analytics-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: rivegauche_analytics
+      POSTGRES_USER: analytics_writer
+      POSTGRES_PASSWORD: ${ANALYTICS_DB_PASSWORD:-local-analytics-writer}
+      ANALYTICS_READER_PASSWORD: ${ANALYTICS_READER_PASSWORD:-local-analytics-reader}
+    volumes:
+      - analytics-data:/var/lib/postgresql/data
+      - ./analytics/postgres/01-events.sql:/docker-entrypoint-initdb.d/01-events.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "analytics_writer", "-d", "rivegauche_analytics"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+  grafana:
+    image: grafana/grafana:13.0.0
+    depends_on:
+      analytics-db:
+        condition: service_healthy
+    environment:
+      ANALYTICS_READER_PASSWORD: ${ANALYTICS_READER_PASSWORD:-local-analytics-reader}
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_AUTH_BASIC_ENABLED: "false"
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_PLUGINS_PREINSTALL_DISABLED: "true"
+      GF_SERVER_ROOT_URL: http://localhost:${GRAFANA_PORT:-3010}/
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/pilot.json
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./analytics/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./analytics/grafana/dashboards:/etc/grafana/dashboards:ro
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3010}:3000"
+
+volumes:
+  analytics-data:
+  grafana-data:

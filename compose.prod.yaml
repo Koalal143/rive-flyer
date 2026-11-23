@@ -1,0 +1,32 @@
+name: rivegauche-prod
+
+services:
+  frontend:
+    restart: unless-stopped
+    ports: !override
+      - "127.0.0.1:${PROD_HTTP_PORT:-8080}:80"
+    volumes:
+      - ./deploy/nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
+
+  backend:
+    restart: unless-stopped
+    environment:
+      ANALYTICS_DB_PASSWORD: ${ANALYTICS_DB_PASSWORD:?set ANALYTICS_DB_PASSWORD in .env.prod}
+
+  analytics-db:
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${ANALYTICS_DB_PASSWORD:?set ANALYTICS_DB_PASSWORD in .env.prod}
+      ANALYTICS_READER_PASSWORD: ${ANALYTICS_READER_PASSWORD:?set ANALYTICS_READER_PASSWORD in .env.prod}
+
+  grafana:
+    restart: unless-stopped
+    environment:
+      ANALYTICS_READER_PASSWORD: ${ANALYTICS_READER_PASSWORD:?set ANALYTICS_READER_PASSWORD in .env.prod}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_AUTH_BASIC_ENABLED: "true"
+      GF_AUTH_DISABLE_LOGIN_FORM: "false"
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env.prod}
+      GF_SERVER_ROOT_URL: http://localhost:${GRAFANA_PORT:-3011}/
+    ports: !override
+      - "127.0.0.1:${GRAFANA_PORT:-3011}:3000"

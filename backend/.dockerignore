@@ -1,3 +1,6 @@
 **
 !requirements.txt
+!analytics-requirements.txt
 !main.py
+!analytics.py
+!data/stores-catalog.json

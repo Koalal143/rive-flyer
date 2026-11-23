@@ -1,0 +1,590 @@
+{
+  "uid": "rivegauche-pilot",
+  "title": "РИВ ГОШ · метрики пилота",
+  "description": "Вовлечённость и переходы с промолендинга",
+  "tags": [
+    "pilot",
+    "rivegauche"
+  ],
+  "timezone": "Europe/Moscow",
+  "schemaVersion": 41,
+  "version": 2,
+  "editable": false,
+  "refresh": "30s",
+  "time": {
+    "from": "now-6d/d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Переходы по QR",
+      "description": "Визиты по QR-ссылке и число разных кодов за выбранный период.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) FILTER (WHERE qr_hash IS NOT NULL) AS \"Визиты по QR\",\n       count(DISTINCT qr_hash) AS \"Разные QR\"\nFROM analytics_events\nWHERE kind = 'visit' AND $__timeFilter(recorded_at)"
+        }
+      ],
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Активное время",
+      "description": "Только время на видимой вкладке. Медиана считается по визитам с замером в выбранном периоде.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 5,
+        "y": 0,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "WITH visits AS (\n    SELECT visit_id, sum(duration_ms) / 1000.0 AS seconds\n    FROM analytics_events\n    WHERE kind = 'active_time' AND $__timeFilter(recorded_at)\n    GROUP BY visit_id\n)\nSELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY seconds) AS \"Медиана\"\nFROM visits"
+        }
+      ],
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Просмотры товаров",
+      "description": "Каждый товар засчитывается один раз за визит. Учитываются бальзам на первом экране и карточки подборки.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 10,
+        "y": 0,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "SELECT count(DISTINCT (visit_id, target)) AS \"Товары × визиты\"\nFROM analytics_events\nWHERE kind = 'product_impression' AND $__timeFilter(recorded_at)"
+        }
+      ],
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Клики на сайт РИВ ГОШ",
+      "description": "Клики на внешний сайт, включая ссылки на товары и каталог магазинов.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 15,
+        "y": 0,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) AS \"Клики\"\nFROM analytics_events\nWHERE kind = 'site_click' AND $__timeFilter(recorded_at)"
+        }
+      ],
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Клики на приложение",
+      "description": "Переходы по кнопкам App Store, Google Play и RuStore.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) AS \"Клики\"\nFROM analytics_events\nWHERE kind = 'app_click' AND $__timeFilter(recorded_at)"
+        }
+      ],
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Посещения по дням",
+      "description": "День начинается в 00:00 по Москве. Разные QR считаются отдельно для каждого дня.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "time_series",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "WITH bounds AS (\n    SELECT $__timeFrom()::timestamptz AS start_at, $__timeTo()::timestamptz AS end_at\n), days AS (\n    SELECT generate_series(\n        date_trunc('day', start_at AT TIME ZONE 'Europe/Moscow'),\n        date_trunc('day', end_at AT TIME ZONE 'Europe/Moscow'),\n        interval '1 day'\n    ) AS day\n    FROM bounds\n), daily AS (\n    SELECT date_trunc('day', recorded_at AT TIME ZONE 'Europe/Moscow') AS day, count(*) AS visits,\n           count(*) FILTER (WHERE qr_hash IS NOT NULL) AS qr_visits,\n           count(DISTINCT qr_hash) AS unique_qr\n    FROM analytics_events\n    WHERE kind = 'visit' AND $__timeFilter(recorded_at)\n    GROUP BY 1\n)\nSELECT greatest(days.day AT TIME ZONE 'Europe/Moscow', bounds.start_at) AS time,\n       coalesce(visits, 0) AS \"Все визиты\",\n       coalesce(qr_visits, 0) AS \"Визиты по QR\",\n       coalesce(unique_qr, 0) AS \"Разные QR\"\nFROM days CROSS JOIN bounds\nLEFT JOIN daily USING (day)\nORDER BY time"
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 2,
+            "fillOpacity": 65,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Активное время по дням",
+      "description": "Медиана времени на видимой вкладке по визитам с замером в этот день.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 5,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "time_series",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "WITH bounds AS (\n    SELECT $__timeFrom()::timestamptz AS start_at, $__timeTo()::timestamptz AS end_at\n), days AS (\n    SELECT generate_series(\n        date_trunc('day', start_at AT TIME ZONE 'Europe/Moscow'),\n        date_trunc('day', end_at AT TIME ZONE 'Europe/Moscow'),\n        interval '1 day'\n    ) AS day\n    FROM bounds\n), visit_time AS (\n    SELECT date_trunc('day', recorded_at AT TIME ZONE 'Europe/Moscow') AS day, visit_id, sum(duration_ms) / 1000.0 AS seconds\n    FROM analytics_events\n    WHERE kind = 'active_time' AND $__timeFilter(recorded_at)\n    GROUP BY 1, visit_id\n), daily AS (\n    SELECT day, percentile_cont(0.5) WITHIN GROUP (ORDER BY seconds) AS median_seconds\n    FROM visit_time\n    GROUP BY day\n)\nSELECT greatest(days.day AT TIME ZONE 'Europe/Moscow', bounds.start_at) AS time, median_seconds AS \"Медиана\"\nFROM days CROSS JOIN bounds\nLEFT JOIN daily USING (day)\nORDER BY time"
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "always",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Просмотры товаров по дням",
+      "description": "Каждый товар считается один раз за визит в пределах дня для каждого типа события.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "time_series",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "WITH bounds AS (\n    SELECT $__timeFrom()::timestamptz AS start_at, $__timeTo()::timestamptz AS end_at\n), days AS (\n    SELECT generate_series(\n        date_trunc('day', start_at AT TIME ZONE 'Europe/Moscow'),\n        date_trunc('day', end_at AT TIME ZONE 'Europe/Moscow'),\n        interval '1 day'\n    ) AS day\n    FROM bounds\n), daily AS (\n    SELECT date_trunc('day', recorded_at AT TIME ZONE 'Europe/Moscow') AS day,\n           count(DISTINCT (visit_id, target)) FILTER (WHERE kind = 'product_impression') AS impressions,\n           count(DISTINCT (visit_id, target)) FILTER (WHERE kind = 'product_open') AS opens\n    FROM analytics_events\n    WHERE kind IN ('product_impression', 'product_open') AND $__timeFilter(recorded_at)\n    GROUP BY 1\n)\nSELECT greatest(days.day AT TIME ZONE 'Europe/Moscow', bounds.start_at) AS time,\n       coalesce(impressions, 0) AS \"Показали\",\n       coalesce(opens, 0) AS \"Открыли\"\nFROM days CROSS JOIN bounds\nLEFT JOIN daily USING (day)\nORDER BY time"
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "always",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Исходящие клики по дням",
+      "description": "Клики на сайт РИВ ГОШ и на кнопки магазинов приложений.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 14,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "time_series",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "WITH bounds AS (\n    SELECT $__timeFrom()::timestamptz AS start_at, $__timeTo()::timestamptz AS end_at\n), days AS (\n    SELECT generate_series(\n        date_trunc('day', start_at AT TIME ZONE 'Europe/Moscow'),\n        date_trunc('day', end_at AT TIME ZONE 'Europe/Moscow'),\n        interval '1 day'\n    ) AS day\n    FROM bounds\n), daily AS (\n    SELECT date_trunc('day', recorded_at AT TIME ZONE 'Europe/Moscow') AS day,\n           count(*) FILTER (WHERE kind = 'site_click') AS site_clicks,\n           count(*) FILTER (WHERE kind = 'app_click') AS app_clicks\n    FROM analytics_events\n    WHERE kind IN ('site_click', 'app_click') AND $__timeFilter(recorded_at)\n    GROUP BY 1\n)\nSELECT greatest(days.day AT TIME ZONE 'Europe/Moscow', bounds.start_at) AS time,\n       coalesce(site_clicks, 0) AS \"Сайт РИВ ГОШ\",\n       coalesce(app_clicks, 0) AS \"Магазины приложений\"\nFROM days CROSS JOIN bounds\nLEFT JOIN daily USING (day)\nORDER BY time"
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "always",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Товары в подборке",
+      "description": "Показ означает, что хотя бы половина карточки была видна 750 мс. Открытие — отдельный просмотр страницы товара. Показатели считаются по уникальным визитам.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 23,
+        "w": 15,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "WITH products (id, label) AS (VALUES\n    ('eva', 'Eva Mosaic Cherry Lip Balm · подарок'),\n    ('holika', 'Holika Holika Holipop Water Tint'),\n    ('celimax', 'Celimax Dual Barrier Creamy Toner'),\n    ('tangle', 'Tangle Teezer The Wet Detangler'),\n    ('influence', 'Influence Beauty Lunar Highlighter')\n)\nSELECT products.label AS \"Товар\",\n       count(DISTINCT events.visit_id) FILTER (WHERE events.kind = 'product_impression') AS \"Увидели\",\n       count(DISTINCT events.visit_id) FILTER (WHERE events.kind = 'product_open') AS \"Открыли\"\nFROM products\nLEFT JOIN analytics_events AS events ON events.target = products.id\n    AND $__timeFilter(events.recorded_at)\nGROUP BY products.id, products.label\nORDER BY \"Увидели\" DESC, products.label"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Магазины приложений",
+      "description": "Клики и число визитов, в которых была нажата кнопка магазина.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 15,
+        "y": 23,
+        "w": 9,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "WITH stores (id, label) AS (VALUES\n    ('app_store', 'App Store'),\n    ('google_play', 'Google Play'),\n    ('rustore', 'RuStore')\n)\nSELECT stores.label AS \"Магазин\", count(events.id) AS \"Клики\",\n       count(DISTINCT events.visit_id) AS \"Визиты с кликом\"\nFROM stores\nLEFT JOIN analytics_events AS events ON events.target = stores.id\n    AND events.kind = 'app_click' AND $__timeFilter(events.recorded_at)\nGROUP BY stores.id, stores.label\nORDER BY \"Клики\" DESC, stores.label"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "Визиты и замеры",
+      "description": "Размер выборки за период. Повторное открытие страницы в рамках визита даёт одну запись о визите.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 31,
+        "w": 24,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) FILTER (WHERE kind = 'visit') AS \"Все визиты\",\n       count(DISTINCT visit_id) FILTER (WHERE kind = 'active_time') AS \"С замером времени\"\nFROM analytics_events\nWHERE $__timeFilter(recorded_at)"
+        }
+      ],
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    }
+  ]
+}

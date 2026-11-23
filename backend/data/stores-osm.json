@@ -1,0 +1,785 @@
+[
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 66.0833613,
+    "longitude": 76.6307284,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4268622854"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 64.5506429,
+    "longitude": 39.7857716,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/14027050887"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 64.5418918,
+    "longitude": 40.5364357,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/relation/7841789"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 64.5344626,
+    "longitude": 40.5255469,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/3415611959"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 64.5326489,
+    "longitude": 40.5278291,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/13737486269",
+    "address": "Архангельск, Троицкий проспект 17"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 61.2398667,
+    "longitude": 73.3746549,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/11176400809"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 60.7109695,
+    "longitude": 28.7511065,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/way/469365520"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 60.0920759,
+    "longitude": 30.378426,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/3748567144"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 60.0681785,
+    "longitude": 30.4364742,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/13514834888"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 60.0591556,
+    "longitude": 30.3373521,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4395417346",
+    "address": "проспект Энгельса 154"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 60.0522341,
+    "longitude": 30.3333031,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/10598737953",
+    "address": "проспект Просвещения 19"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 60.0364956,
+    "longitude": 30.4166514,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/2906201940"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 60.0125308,
+    "longitude": 30.3984848,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4004508420",
+    "address": "Санкт-Петербург, Гражданский проспект 41 к2"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 60.0024584,
+    "longitude": 30.2995053,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4006377552",
+    "address": "Коломяжский проспект 15 к2"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.990724,
+    "longitude": 30.2053798,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/2443425264",
+    "address": "улица Савушкина 141"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.9867108,
+    "longitude": 30.3546632,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/8783633469"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.9862842,
+    "longitude": 30.2988725,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/1650343774",
+    "address": "Санкт-Петербург, улица Савушкина 6"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.9624833,
+    "longitude": 30.3069694,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/977579432"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.9444056,
+    "longitude": 30.3589063,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/2952630828"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.9427307,
+    "longitude": 30.2766394,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/8866320572"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.9350342,
+    "longitude": 30.3341566,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/way/1302911268"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.928782,
+    "longitude": 30.3219921,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/way/691683175"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.928485,
+    "longitude": 30.346468,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/way/1352967276"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.9266702,
+    "longitude": 30.3610509,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/relation/12084152"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.9186765,
+    "longitude": 30.4703887,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/1721445436"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.9149951,
+    "longitude": 30.3184504,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4697439073"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.9148405,
+    "longitude": 30.3488715,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/10200074436"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.8937423,
+    "longitude": 30.5174681,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/9325217721"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.8840465,
+    "longitude": 30.3688147,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/3879078758"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.8702452,
+    "longitude": 30.3799739,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/10294827417"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.8493887,
+    "longitude": 30.1433429,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/2533525154"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.8451278,
+    "longitude": 30.3209787,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4573188336"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.8319627,
+    "longitude": 30.5050904,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/775649968"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.8256385,
+    "longitude": 30.3810205,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4585600189"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.7405713,
+    "longitude": 30.5843387,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/1012870999"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.5648759,
+    "longitude": 30.1216186,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/6050982588"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.5639368,
+    "longitude": 150.803508,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/5251515221"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.2203129,
+    "longitude": 39.8846973,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4109188498"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 59.1974094,
+    "longitude": 39.8595617,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/9609442304",
+    "address": "Пошехонское шоссе 22"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 58.5395334,
+    "longitude": 31.2629678,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/9038779443"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 58.5314074,
+    "longitude": 31.2420411,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/5748561521"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 58.5246105,
+    "longitude": 31.2716217,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/3060421386"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 57.1486323,
+    "longitude": 65.5419494,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/6953625855"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 56.8584266,
+    "longitude": 35.9077802,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/1288756549"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 56.4937119,
+    "longitude": 84.9496571,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/14270031717"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 56.1492223,
+    "longitude": 40.3859474,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/2054266886"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 56.1072926,
+    "longitude": 47.2807105,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/6097806016"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.9986361,
+    "longitude": 37.2586006,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4498428989"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.9162745,
+    "longitude": 37.7566577,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/14222222791"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.9112136,
+    "longitude": 37.397542,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/10237459024",
+    "address": "Ленинградское шоссе 1"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.8630227,
+    "longitude": 37.604069,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4687026700"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.839776,
+    "longitude": 37.3533453,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/10117243522"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.8212465,
+    "longitude": 37.4978311,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/3943945856"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.8207006,
+    "longitude": 49.0952176,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/9634192607"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.8193618,
+    "longitude": 37.5781422,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/11266901724",
+    "address": "Москва, улица Яблочкова 21А"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.7963792,
+    "longitude": 49.1771414,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/12762043512",
+    "address": "улица Николая Ершова 62Б"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.7899771,
+    "longitude": 37.5301642,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/9884797368"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.78654,
+    "longitude": 49.1240374,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/9156264210"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.7574471,
+    "longitude": 37.6586061,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/13227852854"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.7564713,
+    "longitude": 37.6153616,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/relation/6211056"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.7553663,
+    "longitude": 37.4025115,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4974271166"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.7498652,
+    "longitude": 37.5411126,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/5194650823"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.748283,
+    "longitude": 37.5817594,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/13887794385"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.7448104,
+    "longitude": 52.421655,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4189302161"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.7304899,
+    "longitude": 52.3924886,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/way/1096723990"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.7278439,
+    "longitude": 37.580715,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/3839207021"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.7276931,
+    "longitude": 37.4752973,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/12514262362"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.7106275,
+    "longitude": 37.6755149,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4202698498",
+    "address": "7-я Кожуховская улица 9"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.7070359,
+    "longitude": 37.5910186,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/12000767598",
+    "address": "улица Вавилова 3"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.7055608,
+    "longitude": 37.7689353,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4421621008"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.6770504,
+    "longitude": 37.7648695,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/9114986018"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.6584215,
+    "longitude": 37.7416971,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/8805289974"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.6346803,
+    "longitude": 37.3356426,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/10746363750"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.6173766,
+    "longitude": 37.5094096,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4488554710",
+    "address": "район Тёплый Стан, Профсоюзная улица 129А"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.6065169,
+    "longitude": 37.5360058,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/13324386615"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.6036385,
+    "longitude": 37.4930383,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4396090895"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.5661918,
+    "longitude": 38.2284884,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/5093061428"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.0436384,
+    "longitude": 82.9226171,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/3822976132"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 55.0264104,
+    "longitude": 82.9209641,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/3827709022"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 54.9920435,
+    "longitude": 73.3737118,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/3213387816"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 54.9882515,
+    "longitude": 73.3848696,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/11659678469"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 54.9715084,
+    "longitude": 73.2858646,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/11659993269"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 54.9626634,
+    "longitude": 73.3849558,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/11659652173"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 54.7176189,
+    "longitude": 20.5002261,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/14157645593",
+    "address": "улица Генерала Галицкого 30"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 54.6345695,
+    "longitude": 39.6889771,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/11175333860"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 54.6228207,
+    "longitude": 39.7541496,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/3180418006",
+    "address": "Рязань, улица Ленина 9"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 54.5149306,
+    "longitude": 36.2497941,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/3414034882"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 54.3175314,
+    "longitude": 48.3998318,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/3700060294"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 54.1965069,
+    "longitude": 37.6111159,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4242581499"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 54.192184,
+    "longitude": 37.6177588,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/5700950032"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 53.3622706,
+    "longitude": 83.7638709,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4963196884",
+    "address": "Барнаул, проспект Ленина 102В"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 53.2073766,
+    "longitude": 50.1989389,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/11204684842"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 53.1973881,
+    "longitude": 45.0175578,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/11374843455"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 53.1865053,
+    "longitude": 50.1255314,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/11755352364"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 52.606132,
+    "longitude": 39.5778734,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/13104094711"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 51.7644888,
+    "longitude": 55.1002419,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/1184185519"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 51.7490004,
+    "longitude": 36.1919931,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/7576320432"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 51.7107207,
+    "longitude": 39.1601382,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/3786120770"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 51.667776,
+    "longitude": 39.2064232,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/7281777710"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 51.5314173,
+    "longitude": 46.0268044,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/10292820179"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 50.5988522,
+    "longitude": 36.585101,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/13737511531",
+    "address": "Белгород, улица 50-летия Белгородской Области 11"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 47.2903719,
+    "longitude": 39.8465678,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/13737511532",
+    "address": "Аксай, 23"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 46.9005814,
+    "longitude": 142.7415771,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/8058709851",
+    "address": "2-я Центральная улица 1Б"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 45.0121432,
+    "longitude": 41.9185992,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/4125401189"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 44.9011851,
+    "longitude": 37.3215147,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/12181777306"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 44.681445,
+    "longitude": 37.7796988,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/6601521837"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 43.587079,
+    "longitude": 39.723791,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/1760861133"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 43.4851945,
+    "longitude": 43.6085734,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/6134553816"
+  },
+  {
+    "name": "РИВ ГОШ",
+    "latitude": 43.4273254,
+    "longitude": 39.9264659,
+    "source": "openstreetmap",
+    "source_url": "https://www.openstreetmap.org/node/2472081875"
+  }
+]

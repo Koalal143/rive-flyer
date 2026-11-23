@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { asset, gift, selection } from './catalog.js';
 import { ProductCatalog, ProductPage, productPath } from './ProductCatalog.jsx';
 import { StoreLocator } from './StoreLocator.jsx';
+import { startAnalytics } from './analytics.js';
 import './styles.css';
 
 const steps = [
@@ -12,9 +13,9 @@ const steps = [
 ];
 
 const appStores = [
-  ['App Store', 'https://apps.apple.com/ru/app/id1303445343'],
-  ['Google Play', 'https://play.google.com/store/apps/details?id=ru.rivegauche.app'],
-  ['RuStore', 'https://www.rustore.ru/catalog/app/ru.rivegauche.app'],
+  ['App Store', 'https://apps.apple.com/ru/app/id1303445343', 'app-store.svg'],
+  ['Google Play', 'https://play.google.com/store/apps/details?id=ru.rivegauche.app', 'google-play.png'],
+  ['RuStore', 'https://www.rustore.ru/catalog/app/ru.rivegauche.app', 'rustore.png'],
 ];
 
 function Brand() {
@@ -130,8 +131,8 @@ function App() {
             </div>
             <div className="hero-art" data-scroll-reveal="hero">
               <div className="hero-orbit" aria-hidden="true" />
-              <img className="coffee" src={asset('coffee')} alt="Холодный кофе в розовом стакане" fetchPriority="high" />
-              <img className="balm" src={asset('balm')} alt="Черешневый бальзам Eva Mosaic" fetchPriority="high" />
+              <img className="coffee" src={asset('coffee')} alt="Холодный кофе в розовом стакане Surf Coffee" fetchPriority="high" />
+              <img className="balm" src={asset('balm')} alt="Черешневый бальзам Eva Mosaic" fetchPriority="high" data-analytics-product={gift.id} />
             </div>
           </div>
         </section>
@@ -156,7 +157,7 @@ function App() {
           <div className="section-heading">
             <div>
               <h2 id="shops-title">Где забрать подарок</h2>
-              <p>Найдите ближайший РИВ ГОШ. Адреса выдачи подарков уточняются.</p>
+              <p>Проверьте наличие подарка перед визитом.</p>
             </div>
             <a className="button button-outline" href="https://rivegauche.ru/shops" target="_blank" rel="noopener noreferrer">Все магазины РИВ ГОШ</a>
           </div>
@@ -169,7 +170,11 @@ function App() {
           <div className="footer-links">
             <a href="https://rivegauche.ru/" target="_blank" rel="noopener noreferrer">Сайт РИВ ГОШ</a>
             <div className="app-links" aria-label="Магазины приложений">
-              {appStores.map(([name, url]) => <a key={name} href={url} target="_blank" rel="noopener noreferrer">{name}</a>)}
+              {appStores.map(([name, url, badge]) => (
+                <a className="app-badge" key={name} href={url} target="_blank" rel="noopener noreferrer">
+                  <img src={`${import.meta.env.BASE_URL}store-badges/${badge}`} alt={`Приложение РИВ ГОШ в ${name}`} />
+                </a>
+              ))}
             </div>
           </div>
         </div>
@@ -181,4 +186,10 @@ function App() {
 const productId = new URLSearchParams(window.location.search).get('product');
 const product = [gift, ...selection].find(({ id }) => id === productId);
 if (product) document.title = `${product.brand} ${product.name} — Кофе и черешня`;
-createRoot(document.getElementById('root')).render(product ? <ProductPage product={product} /> : <App />);
+
+function TrackedPage() {
+  useEffect(() => startAnalytics(product?.id), []);
+  return product ? <ProductPage product={product} /> : <App />;
+}
+
+createRoot(document.getElementById('root')).render(<TrackedPage />);

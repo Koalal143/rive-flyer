@@ -4,6 +4,12 @@ const yandexSearch = 'https://yandex.ru/maps/?text=' + encodeURIComponent('РИ�
 const decimal = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 });
 let loadingMaps;
 
+function giftStatus({ gift_stock: stock }) {
+  if (stock == null) return { tone: 'unknown', label: 'Наличие не подтверждено' };
+  if (stock === 0) return { tone: 'empty', label: 'Подарки закончились' };
+  return { tone: 'available', label: 'Есть подарок' };
+}
+
 function loadYandexMaps(key) {
   if (!loadingMaps) {
     const script = document.createElement('script');
@@ -43,8 +49,9 @@ function loadYandexMaps(key) {
   return loadingMaps;
 }
 
-function StoreMap({ mapKey, store }) {
+function StoreMap({ mapKey, places, selected, onSelect }) {
   const container = useRef(null);
+  const markers = useRef([]);
   const [status, setStatus] = useState('loading');
 
   useEffect(() => {
@@ -55,39 +62,89 @@ function StoreMap({ mapKey, store }) {
     loadYandexMaps(mapKey).then((maps) => {
       if (disposed) return;
       const { YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapMarker } = maps;
-      const coordinates = [store.longitude, store.latitude];
-      const marker = document.createElement('span');
-      marker.className = 'locator-pin';
-      marker.textContent = 'РИВ ГОШ';
-      marker.title = store.name;
-
+      const { longitude, latitude } = places[0].store;
       map = new YMap(container.current, {
-        location: { center: coordinates, zoom: 16 },
+        location: { center: [longitude, latitude], zoom: places.length > 1 ? 12 : 16 },
       });
       map.addChild(new YMapDefaultSchemeLayer());
       map.addChild(new YMapDefaultFeaturesLayer());
-      map.addChild(new YMapMarker({ coordinates }, marker));
+
+      markers.current = places.map(({ store }, index) => {
+        const button = document.createElement('button');
+        const gift = giftStatus(store);
+        const name = [store.name, store.address].filter(Boolean).join(', ');
+        button.type = 'button';
+        button.className = 'locator-marker';
+        button.title = name;
+        button.setAttribute('aria-label', name);
+        button.setAttribute('aria-pressed', 'false');
+        button.addEventListener('click', () => onSelect(index));
+
+        const detail = document.createElement('span');
+        detail.className = `locator-pin locator-pin--${gift.tone}`;
+        detail.setAttribute('aria-hidden', 'true');
+        const brand = document.createElement('strong');
+        brand.textContent = 'РИВ ГОШ';
+        detail.append(brand);
+        if (store.address) {
+          const address = document.createElement('span');
+          address.className = 'locator-pin-address';
+          address.textContent = store.address;
+          detail.append(address);
+        }
+        const availability = document.createElement('span');
+        availability.textContent = gift.label;
+        detail.append(availability);
+        button.append(detail);
+
+        const entity = new YMapMarker({
+          coordinates: [store.longitude, store.latitude],
+          blockEvents: true,
+        }, button);
+        map.addChild(entity);
+        return { button, entity };
+      });
+
       setStatus('ready');
     }).catch(() => {
       if (disposed) return;
       map?.destroy();
       map = undefined;
+      markers.current = [];
       setStatus('error');
     });
 
     return () => {
       disposed = true;
       map?.destroy();
+      markers.current = [];
     };
-  }, [mapKey, store]);
+  }, [mapKey, places, onSelect]);
+
+  useEffect(() => {
+    markers.current.forEach(({ button, entity }, index) => {
+      const pressed = String(index === selected);
+      if (button.getAttribute('aria-pressed') === pressed) return;
+      button.setAttribute('aria-pressed', pressed);
+      entity.update({ zIndex: index === selected ? 1 : 0 });
+    });
+  }, [selected, status]);
 
   if (!mapKey) return null;
 
   return (
     <div className="locator-map-panel">
-      <div className="locator-map" ref={container} role="region" aria-label={`Карта: ${store.name}`} hidden={status === 'error'} />
+      <div className="locator-map" ref={container} role="region" aria-label="Магазины РИВ ГОШ на карте" hidden={status === 'error'} />
       {status === 'loading' && <p className="locator-map-note" role="status">Загружаем карту…</p>}
       {status === 'error' && <p className="locator-map-note" role="status">Карта не загрузилась. Откройте адрес по ссылке выше.</p>}
+      {status === 'ready' && (
+        <div className="fine-print locator-map-meta">
+          {places.length > 1 && <span>Нажмите на метку, чтобы выбрать магазин.</span>}
+          {places.some(({ store }) => store.source === 'openstreetmap') && (
+            <a className="locator-credit" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -118,7 +175,9 @@ function storeLink(store) {
 export function StoreLocator() {
   const [config, setConfig] = useState(null);
   const [lookup, setLookup] = useState({ phase: 'idle' });
-  const { phase, message, result } = lookup;
+  const [selected, setSelected] = useState(0);
+  const { phase, message, places } = lookup;
+  const result = places?.[selected];
 
   useEffect(() => {
     const request = new AbortController();
@@ -165,7 +224,9 @@ export function StoreLocator() {
         return;
       }
       if (!response.ok) throw new Error('Поиск недоступен');
-      setLookup({ phase: 'found', result: await response.json() });
+      const { store, distance_m, other_stores = [] } = await response.json();
+      setSelected(0);
+      setLookup({ phase: 'found', places: [{ store, distance_m }, ...other_stores] });
     } catch {
       setLookup({ phase: 'error', message: 'Поиск магазинов сейчас недоступен. Попробуйте ещё раз или откройте Яндекс Карты.' });
     }
@@ -178,34 +239,43 @@ export function StoreLocator() {
   const distance = result && (result.distance_m < 1000
     ? `${decimal.format(result.distance_m)} м`
     : `${decimal.format(result.distance_m / 1000)} км`);
+  const gift = result && giftStatus(result.store);
+  const action = result ? 'Обновить местоположение' : 'Найти ближайший магазин';
 
   return (
     <div className="locator">
       <div className="locator-actions">
-        <button className="button button-dark" type="button" onClick={locate} disabled={busy || !config?.search_source}>
-          {result ? 'Обновить местоположение' : 'Найти ближайший магазин'}
+        <div>
+          <h3 className="locator-title">{result && selected !== 0 ? 'Выбранный магазин' : 'Ближайший магазин'}</h3>
+          <p className="locator-hint">{result ? 'Обновить местоположение' : 'По вашему местоположению'}</p>
+        </div>
+        <button className="locator-trigger" type="button" aria-label={action} title={action} onClick={locate} disabled={busy || !config?.search_source}>
+          {busy ? <span className="locator-spinner" aria-hidden="true" /> : <span className="locator-chevron" aria-hidden="true" />}
         </button>
-        <a className="locator-external" href={yandexSearch} target="_blank" rel="noopener noreferrer">Поиск на Яндекс Картах</a>
       </div>
-      <div className="locator-status" role="status">
+      <div className={result ? 'visually-hidden' : 'locator-status'} role="status">
         {status}
         {config && !config.search_source && 'Онлайн-поиск на сайте пока недоступен. Магазины можно посмотреть на Яндекс Картах.'}
-        {result && 'Ближайший магазин найден.'}
+        {places && 'Ближайший магазин найден.'}
       </div>
       {result && (
         <div className="locator-result">
-          <div>
+          <div aria-live="polite" aria-atomic="true">
             <p className="locator-distance">{distance} по прямой</p>
             <h3>{result.store.name}</h3>
-            {result.store.address && <p>{result.store.address}</p>}
+            {result.store.address && <address className="locator-address">{result.store.address}</address>}
             {result.store.hours && <p>{result.store.hours}</p>}
+            <p className={`locator-gift locator-gift--${gift.tone}`}>{gift.label}</p>
           </div>
           <a className="button button-outline" href={storeLink(result.store)} target="_blank" rel="noopener noreferrer">
             Открыть в Яндекс Картах
           </a>
         </div>
       )}
-      {result && <StoreMap key={`${result.store.latitude},${result.store.longitude}`} store={result.store} mapKey={config.map_key} />}
+      {places && <StoreMap places={places} selected={selected} onSelect={setSelected} mapKey={config?.map_key} />}
+      {(phase === 'error' || (config && !config.search_source)) && (
+        <a className="locator-external" href={yandexSearch} target="_blank" rel="noopener noreferrer">Поиск на Яндекс Картах</a>
+      )}
       {config?.search_source === 'yandex' && (
         <p className="fine-print locator-privacy">Для поиска приблизительное местоположение передаётся Яндекс Картам.</p>
       )}

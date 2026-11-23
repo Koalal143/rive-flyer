@@ -1,17 +1,23 @@
 import json
+import logging
 import os
 import re
 from contextlib import asynccontextmanager
 from math import asin, cos, radians, sin, sqrt
 from pathlib import Path
+from typing import Literal
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request, Response
 from pydantic import BaseModel, Field, TypeAdapter
 
+from analytics import router as analytics_router
+
 SEARCH_URL = "https://search-maps.yandex.ru/v1/"
 SEARCH_RADII_KM = (12, 50, 150)
 EARTH_RADIUS_M = 6_371_008.8
+FALLBACK_CATALOG = Path(__file__).with_name("data") / "stores-catalog.json"
+logger = logging.getLogger("uvicorn.error")
 
 
 class Coordinates(BaseModel):
@@ -23,11 +29,18 @@ class Store(Coordinates):
     name: str = Field(min_length=1)
     address: str | None = None
     hours: str | None = None
+    gift_stock: int | None = Field(default=None, ge=0, strict=True)
+    source: Literal["openstreetmap", "malls", "totadres", "directory"] | None = None
+    source_url: str | None = None
 
 
 class NearestStore(BaseModel):
     store: Store
     distance_m: int
+
+
+class StoreLookup(NearestStore):
+    other_stores: list[NearestStore]
 
 
 class MapConfig(BaseModel):
@@ -51,6 +64,13 @@ def nearest_store(origin: Coordinates, candidates: list[Store]) -> NearestStore 
         key=lambda result: result[0],
     )
     return NearestStore(store=store, distance_m=round(meters))
+
+
+def nearby_fallback(origin: Coordinates, candidates: list[Store]) -> NearestStore | None:
+    result = nearest_store(origin, candidates)
+    if result is not None and result.distance_m <= SEARCH_RADII_KM[-1] * 1000:
+        return result
+    return None
 
 
 def parse_search_results(payload: dict) -> list[Store]:
@@ -111,10 +131,9 @@ async def search_yandex(client: httpx.AsyncClient, key: str, origin: Coordinates
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     catalog_path = os.getenv("STORE_CATALOG_PATH", "").strip()
-    app.state.catalog = None
-    if catalog_path:
-        contents = Path(catalog_path).read_text(encoding="utf-8")
-        app.state.catalog = TypeAdapter(list[Store]).validate_json(contents)
+    catalog_type = TypeAdapter(list[Store])
+    app.state.catalog = catalog_type.validate_json(Path(catalog_path).read_bytes()) if catalog_path else None
+    app.state.fallback_catalog = catalog_type.validate_json(FALLBACK_CATALOG.read_bytes()) if FALLBACK_CATALOG.is_file() else []
 
     app.state.map_key = os.getenv("YANDEX_MAPS_API_KEY", "").strip() or None
     app.state.search_key = os.getenv("YANDEX_SEARCH_API_KEY", "").strip() or None
@@ -125,6 +144,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="RiveGaucheMVP — поиск магазинов", lifespan=lifespan)
+app.include_router(analytics_router)
 
 
 @app.get("/api/maps/config", response_model=MapConfig)
@@ -135,11 +155,13 @@ async def map_config(request: Request, response: Response) -> MapConfig:
         source = "catalog"
     elif request.app.state.search_key:
         source = "yandex"
+    elif request.app.state.fallback_catalog:
+        source = "catalog"
     return MapConfig(map_key=request.app.state.map_key, search_source=source)
 
 
-@app.post("/api/stores/nearest", response_model=NearestStore)
-async def find_nearest(origin: Coordinates, request: Request, response: Response) -> NearestStore:
+@app.post("/api/stores/nearest", response_model=StoreLookup)
+async def find_nearest(origin: Coordinates, request: Request, response: Response) -> StoreLookup:
     response.headers["Cache-Control"] = "no-store"
     state = request.app.state
     if state.catalog is not None:
@@ -147,12 +169,27 @@ async def find_nearest(origin: Coordinates, request: Request, response: Response
     elif state.search_key:
         try:
             result = await search_yandex(state.search_client, state.search_key, origin)
-        except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError) as e:
-            print(e)
-            raise HTTPException(502, detail="search_unavailable") from None
+        except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError) as error:
+            reason = f"HTTP {error.response.status_code}" if isinstance(error, httpx.HTTPStatusError) else type(error).__name__
+            logger.warning("Yandex organization search failed: %s", reason)
+            result = nearby_fallback(origin, state.fallback_catalog)
+            if result is None:
+                raise HTTPException(502, detail="search_unavailable") from None
+    elif state.fallback_catalog:
+        result = nearby_fallback(origin, state.fallback_catalog)
     else:
         raise HTTPException(503, detail="search_not_configured")
 
     if result is None:
         raise HTTPException(404, detail="no_store_found")
-    return result
+    catalog = state.catalog if state.catalog is not None else state.fallback_catalog
+    match = nearest_store(result.store, catalog)
+    # The live search and the catalog may place the same shop at different entrances.
+    duplicate = match.store if match and match.distance_m <= 80 else None
+    other_stores = [
+        NearestStore(store=store, distance_m=round(distance_m(origin, store)))
+        for store in catalog
+        if store != duplicate
+    ]
+    other_stores.sort(key=lambda entry: entry.distance_m)
+    return StoreLookup(store=result.store, distance_m=result.distance_m, other_stores=other_stores)

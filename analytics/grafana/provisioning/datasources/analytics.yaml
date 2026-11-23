@@ -1,0 +1,17 @@
+apiVersion: 1
+
+datasources:
+  - name: РИВ ГОШ · события
+    uid: rivegauche-events
+    type: postgres
+    access: proxy
+    url: analytics-db:5432
+    user: analytics_reader
+    isDefault: true
+    editable: false
+    secureJsonData:
+      password: $ANALYTICS_READER_PASSWORD
+    jsonData:
+      database: rivegauche_analytics
+      sslmode: disable
+      postgresVersion: 1600
