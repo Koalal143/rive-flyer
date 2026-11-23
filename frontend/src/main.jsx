@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { asset, gift, selection } from './catalog.js';
 import { ProductCatalog, ProductPage, productPath } from './ProductCatalog.jsx';
 import { StoreLocator } from './StoreLocator.jsx';
+import { OfferSurvey } from './OfferSurvey.jsx';
 import { startAnalytics } from './analytics.js';
 import './styles.css';
 
@@ -163,6 +164,7 @@ function App() {
           </div>
           <StoreLocator />
         </section>
+        <OfferSurvey />
       </main>
       <footer className="footer">
         <div className="wrap footer-inner">

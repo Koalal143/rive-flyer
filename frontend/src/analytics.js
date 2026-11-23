@@ -6,6 +6,7 @@ const appHosts = {
   'play.google.com': 'google_play',
   'www.rustore.ru': 'rustore',
 };
+let currentVisit;
 
 function newId() {
   return crypto.randomUUID?.() ?? Array.from(crypto.getRandomValues(new Uint8Array(16)),
@@ -24,24 +25,54 @@ function loadVisit(qr) {
   return { id: newId(), qr };
 }
 
-export function startAnalytics(productId) {
+function getVisit() {
+  if (currentVisit) return currentVisit;
   const code = new URLSearchParams(location.search).get('qr');
-  const visit = loadVisit(code && qrFormat.test(code) ? code : null);
+  currentVisit = loadVisit(code && qrFormat.test(code) ? code : null);
+  return currentVisit;
+}
 
-  function send(kind, details = {}, id = newId()) {
-    visit.lastSeen = Date.now();
-    try {
-      sessionStorage.setItem(visitKey, JSON.stringify(visit));
-    } catch {
-      // A blocked session storage must not affect the page or event delivery.
-    }
-    void fetch('/api/analytics/events', {
-      method: 'POST',
-      keepalive: true,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, visit_id: visit.id, kind, ...details }),
-    }).catch(() => {});
+function saveVisit(visit) {
+  visit.lastSeen = Date.now();
+  try {
+    sessionStorage.setItem(visitKey, JSON.stringify(visit));
+  } catch {
+    // A blocked session storage must not affect the page or event delivery.
   }
+}
+
+function eventRequest(kind, details = {}, id = newId()) {
+  const visit = getVisit();
+  saveVisit(visit);
+  return fetch('/api/analytics/events', {
+    method: 'POST',
+    keepalive: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, visit_id: visit.id, kind, ...details }),
+  });
+}
+
+export function trackEvent(kind, details, id) {
+  void eventRequest(kind, details, id).catch(() => {});
+}
+
+export function getSurveyAnswer() {
+  return getVisit().surveyAnswer ?? null;
+}
+
+export async function submitSurvey(target) {
+  const response = await eventRequest('survey_answer', { target });
+  const answer = response.ok ? target
+    : response.status === 409 ? (await response.json()).detail?.answer : null;
+  if (!answer) throw new Error('Не удалось сохранить ответ');
+  const visit = getVisit();
+  visit.surveyAnswer = answer;
+  saveVisit(visit);
+  return answer;
+}
+
+export function startAnalytics(productId) {
+  const visit = getVisit();
 
   function outbound(event) {
     if (event.defaultPrevented || (event.type === 'auxclick' && event.button !== 1)) return;
@@ -49,9 +80,9 @@ export function startAnalytics(productId) {
     if (!anchor) return;
     const url = new URL(anchor.href, location.href);
     if (url.hostname === 'rivegauche.ru' || url.hostname === 'www.rivegauche.ru') {
-      send('site_click');
+      trackEvent('site_click');
     } else if (Object.hasOwn(appHosts, url.hostname)) {
-      send('app_click', { target: appHosts[url.hostname] });
+      trackEvent('app_click', { target: appHosts[url.hostname] });
     }
   }
 
@@ -69,7 +100,7 @@ export function startAnalytics(productId) {
         pending.set(target, setTimeout(() => {
           pending.delete(target);
           viewed.add(target);
-          send('product_impression', { target: target.dataset.analyticsProduct });
+          trackEvent('product_impression', { target: target.dataset.analyticsProduct });
         }, 750));
       }
     }
@@ -80,7 +111,7 @@ export function startAnalytics(productId) {
     const now = performance.now();
     const duration = Math.min(30000, Math.round(now - visibleSince));
     visibleSince = now;
-    if (duration > 0) send('active_time', { duration_ms: duration });
+    if (duration > 0) trackEvent('active_time', { duration_ms: duration });
   }
 
   function pause() {
@@ -94,9 +125,9 @@ export function startAnalytics(productId) {
   function resume() {
     if (document.hidden || visibleSince !== null) return;
     visibleSince = performance.now();
-    send('visit', { qr: visit.qr }, visit.id);
+    trackEvent('visit', { qr: visit.qr }, visit.id);
     if (productId && !opened) {
-      send('product_open', { target: productId });
+      trackEvent('product_open', { target: productId });
       opened = true;
     }
     if (observer) for (const card of cards) if (!viewed.has(card)) observer.observe(card);

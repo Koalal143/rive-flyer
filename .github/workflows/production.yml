@@ -1,0 +1,96 @@
+name: Production deploy
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  deploy:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    concurrency:
+      group: rivegauche-production
+      cancel-in-progress: false
+    steps:
+      - name: Deploy over SSH
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST || '171.22.236.198' }}
+          DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/RiveGaucheMVP' }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          : "${DEPLOY_USER:?Set DEPLOY_USER}"
+          : "${DEPLOY_SSH_KEY:?Set DEPLOY_SSH_KEY}"
+          : "${DEPLOY_KNOWN_HOSTS:?Set DEPLOY_KNOWN_HOSTS}"
+          umask 077
+          ssh_dir=$(mktemp -d)
+          trap 'rm -rf "$ssh_dir"' EXIT
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$ssh_dir/deploy_key"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$ssh_dir/known_hosts"
+          printf -v remote_args '%q %q %q' "$DEPLOY_PATH" "$GITHUB_REF_NAME" "$GITHUB_SHA"
+          ssh -T -p "$DEPLOY_PORT" -i "$ssh_dir/deploy_key" -l "$DEPLOY_USER" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o "UserKnownHostsFile=$ssh_dir/known_hosts" -o ConnectTimeout=10 \
+            -- "$DEPLOY_HOST" "bash -s -- $remote_args" <<'REMOTE'
+          set -euo pipefail
+          cd "$1"
+          branch=$2
+          revision=$3
+
+          if [[ $(git branch --show-current) != "$branch" ]]; then
+            echo "The server checkout must be on $branch" >&2
+            exit 1
+          fi
+          if [[ -n $(git status --porcelain --untracked-files=no) ]]; then
+            echo 'The server checkout has tracked changes' >&2
+            exit 1
+          fi
+          test -r .env.prod
+          git fetch --no-tags origin "refs/heads/$branch"
+          if [[ $(git rev-parse FETCH_HEAD) != "$revision" ]]; then
+            echo 'A newer commit is already on the default branch; skipping this run.'
+            exit 0
+          fi
+          git merge --ff-only "$revision"
+          test "$(git rev-parse HEAD)" = "$revision"
+
+          # Compose gives inherited shell variables priority over --env-file.
+          unset COMPOSE_PROFILES SITE_DOMAIN CERTBOT_EMAIL \
+            ANALYTICS_DB_PASSWORD ANALYTICS_READER_PASSWORD GRAFANA_ADMIN_PASSWORD GRAFANA_PORT \
+            YANDEX_MAPS_API_KEY YANDEX_SEARCH_API_KEY STORE_CATALOG_PATH
+          printf 'Deploying %s from %s using .env.prod\n' "$revision" "$PWD"
+
+          compose=(docker compose --env-file .env.prod -f compose.yaml -f compose.prod.yaml)
+          "${compose[@]}" config -q
+          "${compose[@]}" up -d --build --wait --wait-timeout 180
+          "${compose[@]}" exec -T nginx nginx -t
+          domain=$("${compose[@]}" exec -T nginx sh -c 'printf "%s" "$SITE_DOMAIN"')
+          check=(curl --noproxy '*' --fail-early --fail --silent --show-error --max-time 10)
+          if [[ -z $domain ]]; then
+            "${check[@]}" http://127.0.0.1/ http://127.0.0.1/api/maps/config > /dev/null
+            exit 0
+          fi
+
+          if ! "${compose[@]}" config --services | grep -Fxq certbot; then
+            echo 'Set COMPOSE_PROFILES=tls and CERTBOT_EMAIL in .env.prod to enable Certbot.' >&2
+            exit 1
+          fi
+          for ((attempt = 0; attempt < 36; attempt++)); do
+            if "${check[@]}" --resolve "$domain:443:127.0.0.1" \
+                "https://$domain/" "https://$domain/api/maps/config" > /dev/null 2>&1; then
+              redirect=$("${check[@]}" -o /dev/null -w '%{redirect_url}' 'http://127.0.0.1/?qr=health-check')
+              test "$redirect" = "https://$domain/?qr=health-check"
+              exit 0
+            fi
+            sleep 5
+          done
+          "${compose[@]}" logs --tail=35 nginx certbot
+          exit 1
+          REMOTE

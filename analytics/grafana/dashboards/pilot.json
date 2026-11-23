@@ -8,7 +8,7 @@
   ],
   "timezone": "Europe/Moscow",
   "schemaVersion": 41,
-  "version": 2,
+  "version": 3,
   "editable": false,
   "refresh": "30s",
   "time": {
@@ -28,7 +28,7 @@
       "gridPos": {
         "x": 0,
         "y": 0,
-        "w": 5,
+        "w": 4,
         "h": 5
       },
       "targets": [
@@ -74,9 +74,9 @@
         "uid": "rivegauche-events"
       },
       "gridPos": {
-        "x": 5,
+        "x": 4,
         "y": 0,
-        "w": 5,
+        "w": 4,
         "h": 5
       },
       "targets": [
@@ -122,9 +122,9 @@
         "uid": "rivegauche-events"
       },
       "gridPos": {
-        "x": 10,
+        "x": 8,
         "y": 0,
-        "w": 5,
+        "w": 4,
         "h": 5
       },
       "targets": [
@@ -170,9 +170,9 @@
         "uid": "rivegauche-events"
       },
       "gridPos": {
-        "x": 15,
+        "x": 12,
         "y": 0,
-        "w": 5,
+        "w": 4,
         "h": 5
       },
       "targets": [
@@ -218,7 +218,7 @@
         "uid": "rivegauche-events"
       },
       "gridPos": {
-        "x": 20,
+        "x": 16,
         "y": 0,
         "w": 4,
         "h": 5
@@ -234,6 +234,54 @@
           "editorMode": "code",
           "rawQuery": true,
           "rawSql": "SELECT count(*) AS \"Клики\"\nFROM analytics_events\nWHERE kind = 'app_click' AND $__timeFilter(recorded_at)"
+        }
+      ],
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 13,
+      "type": "stat",
+      "title": "Открытия карты",
+      "description": "Уникальные визиты, в которых загрузилась интерактивная карта.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "SELECT count(DISTINCT visit_id) AS \"Открыли карту\"\nFROM analytics_events\nWHERE kind = 'map_open' AND $__timeFilter(recorded_at)"
         }
       ],
       "options": {
@@ -481,6 +529,116 @@
       }
     },
     {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Открытия карты по дням",
+      "description": "Уникальные визиты с успешным открытием карты. Дни по московскому времени.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 23,
+        "w": 12,
+        "h": 10
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "time_series",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "WITH bounds AS (\n    SELECT $__timeFrom()::timestamptz AS start_at, $__timeTo()::timestamptz AS end_at\n), days AS (\n    SELECT generate_series(\n        date_trunc('day', start_at AT TIME ZONE 'Europe/Moscow'),\n        date_trunc('day', end_at AT TIME ZONE 'Europe/Moscow'),\n        interval '1 day'\n    ) AS day\n    FROM bounds\n), daily AS (\n    SELECT date_trunc('day', recorded_at AT TIME ZONE 'Europe/Moscow') AS day,\n           count(DISTINCT visit_id) AS map_visits\n    FROM analytics_events\n    WHERE kind = 'map_open' AND $__timeFilter(recorded_at)\n    GROUP BY 1\n)\nSELECT greatest(days.day AT TIME ZONE 'Europe/Moscow', bounds.start_at) AS time,\n       coalesce(map_visits, 0) AS \"Открыли карту\"\nFROM days CROSS JOIN bounds\nLEFT JOIN daily USING (day)\nORDER BY time"
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 2,
+            "fillOpacity": 65,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 15,
+      "type": "barchart",
+      "title": "Как оценили предложение",
+      "description": "Число ответов на лендинге. Один ответ за визит.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 23,
+        "w": 12,
+        "h": 10
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "WITH answers (id, label, sort_order) AS (VALUES\n    ('store_interest', 'Заинтересовал магазин', 1),\n    ('gift_only', 'Только за подарком', 2),\n    ('neutral', 'Скорее нейтрально', 3),\n    ('no_visit', 'Не пришёл бы за подарком', 4)\n)\nSELECT answers.label AS \"Ответ\", count(events.id) AS \"Голоса\"\nFROM answers\nLEFT JOIN analytics_events AS events ON events.kind = 'survey_answer'\n    AND events.target = answers.id AND $__timeFilter(events.recorded_at)\nGROUP BY answers.id, answers.label, answers.sort_order\nORDER BY answers.sort_order"
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Ответ",
+        "showValue": "always",
+        "groupWidth": 0.75,
+        "barWidth": 0.75,
+        "stacking": "none",
+        "legend": {
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
       "id": 6,
       "type": "table",
       "title": "Товары в подборке",
@@ -491,7 +649,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 23,
+        "y": 33,
         "w": 15,
         "h": 8
       },
@@ -520,7 +678,7 @@
       },
       "gridPos": {
         "x": 15,
-        "y": 23,
+        "y": 33,
         "w": 9,
         "h": 8
       },
@@ -549,7 +707,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 31,
+        "y": 41,
         "w": 24,
         "h": 4
       },

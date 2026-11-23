@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { trackEvent } from './analytics.js';
 
 const yandexSearch = 'https://yandex.ru/maps/?text=' + encodeURIComponent('РИВ ГОШ');
 const decimal = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 });
@@ -106,6 +107,7 @@ function StoreMap({ mapKey, places, selected, onSelect }) {
       });
 
       setStatus('ready');
+      trackEvent('map_open');
     }).catch(() => {
       if (disposed) return;
       map?.destroy();
