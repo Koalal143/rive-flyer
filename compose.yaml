@@ -40,7 +40,7 @@ services:
       timeout: 3s
       retries: 10
   grafana:
-    image: grafana/grafana:13.0.0
+    image: grafana/grafana:13.0.13
     depends_on:
       analytics-db:
         condition: service_healthy

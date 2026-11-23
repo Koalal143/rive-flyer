@@ -188,9 +188,9 @@ docker compose --env-file .env.prod -f compose.yaml -f compose.prod.yaml logs --
 
 ### Деплой через GitHub Actions
 
-CI проверяет production Compose, собирает фронтенд и бэкенд и выполняет
-`nginx -t`. После успешной проверки push в основную ветку репозитория
-запускает деплой. Тот же workflow можно запустить вручную с основной ветки.
+Push в основную ветку запускает workflow `Production deploy`. Его также
+можно запустить вручную с основной ветки. Сборка образов и запуск
+production Compose происходят на VPS.
 
 Подготовьте на сервере Git-клон репозитория на основной ветке и заполненный
 `.env.prod` с production-паролями. SSH-пользователю нужен доступ к Docker,
@@ -224,3 +224,6 @@ sudo awk '{print "171.22.236.198", $1, $2}' /etc/ssh/ssh_host_ed25519_key.pub
 Workflow обновляет клон через fast-forward, применяет production Compose
 и проверяет ответ лендинга и FastAPI. Если задан `SITE_DOMAIN`, workflow
 проверяет сертификат и ответы по HTTPS, а также редирект с порта 80.
+
+Продовые настройки берутся из `.env.prod` в каталоге клона на VPS.
+Деплой сбрасывает одноимённые переменные SSH-сессии перед запуском Compose.
