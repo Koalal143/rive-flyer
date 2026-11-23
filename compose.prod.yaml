@@ -2,8 +2,16 @@ name: rivegauche-prod
 
 services:
   frontend:
+    profiles: [local-frontend]
+    ports: !reset []
+
+  nginx:
+    build: .
+    depends_on:
+      backend:
+        condition: service_healthy
     restart: unless-stopped
-    ports: !override
+    ports:
       - "127.0.0.1:${PROD_HTTP_PORT:-8080}:80"
     volumes:
       - ./deploy/nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
