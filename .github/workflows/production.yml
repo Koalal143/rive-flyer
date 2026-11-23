@@ -32,8 +32,15 @@ jobs:
           umask 077
           ssh_dir=$(mktemp -d)
           trap 'rm -rf "$ssh_dir"' EXIT
-          printf '%s\n' "$DEPLOY_SSH_KEY" > "$ssh_dir/deploy_key"
+          printf '%s\n' "$DEPLOY_SSH_KEY" | tr -d '\r' > "$ssh_dir/deploy_key"
           printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$ssh_dir/known_hosts"
+          if ! ssh-keygen -y -P '' -f "$ssh_dir/deploy_key" > "$ssh_dir/deploy_key.pub"; then
+            echo '::error::DEPLOY_SSH_KEY must contain a complete private SSH key without a passphrase.' >&2
+            exit 1
+          fi
+          printf 'SSH target: %s:%s\n' "$DEPLOY_HOST" "$DEPLOY_PORT"
+          printf 'Deploy key fingerprint: '
+          ssh-keygen -lf "$ssh_dir/deploy_key.pub" | awk '{print $2}'
           printf -v remote_args '%q %q %q' "$DEPLOY_PATH" "$GITHUB_REF_NAME" "$GITHUB_SHA"
           ssh -T -p "$DEPLOY_PORT" -i "$ssh_dir/deploy_key" -l "$DEPLOY_USER" \
             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
