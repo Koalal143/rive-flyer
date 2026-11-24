@@ -3,4 +3,5 @@
 !analytics-requirements.txt
 !main.py
 !analytics.py
+!survey.py
 !data/stores-catalog.json

@@ -56,19 +56,20 @@ export function trackEvent(kind, details, id) {
   void eventRequest(kind, details, id).catch(() => {});
 }
 
-export function getSurveyAnswer() {
-  return getVisit().surveyAnswer ?? null;
+export function hasCompletedSurvey() {
+  return getVisit().offerSurveyCompleted === true;
 }
 
-export async function submitSurvey(target) {
-  const response = await eventRequest('survey_answer', { target });
-  const answer = response.ok ? target
-    : response.status === 409 ? (await response.json()).detail?.answer : null;
-  if (!answer) throw new Error('Не удалось сохранить ответ');
+export async function submitOfferSurvey(answers) {
   const visit = getVisit();
-  visit.surveyAnswer = answer;
+  const response = await fetch('/api/survey/responses', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ visit_id: visit.id, ...answers }),
+  });
+  if (!response.ok) throw new Error('Не удалось сохранить ответы');
+  visit.offerSurveyCompleted = true;
   saveVisit(visit);
-  return answer;
 }
 
 export function startAnalytics(productId) {

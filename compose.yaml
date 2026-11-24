@@ -10,6 +10,7 @@ services:
       STORE_CATALOG_PATH: ${STORE_CATALOG_PATH:-}
       ANALYTICS_DB_HOST: analytics-db
       ANALYTICS_DB_PASSWORD: ${ANALYTICS_DB_PASSWORD:-local-analytics-writer}
+      SURVEY_ADMIN_PASSWORD: ${SURVEY_ADMIN_PASSWORD:-}
     volumes:
       - ./backend/data:/app/data:ro
     healthcheck:

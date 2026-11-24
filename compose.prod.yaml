@@ -41,6 +41,7 @@ services:
     restart: unless-stopped
     environment:
       ANALYTICS_DB_PASSWORD: ${ANALYTICS_DB_PASSWORD:?set ANALYTICS_DB_PASSWORD in .env.prod}
+      SURVEY_ADMIN_HTTPS_ONLY: "true"
 
   analytics-db:
     restart: unless-stopped
@@ -56,7 +57,11 @@ services:
       GF_AUTH_BASIC_ENABLED: "true"
       GF_AUTH_DISABLE_LOGIN_FORM: "false"
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env.prod}
-      GF_SERVER_ROOT_URL: http://localhost:${GRAFANA_PORT:-3011}/
+      GF_SECURITY_COOKIE_SECURE: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_DOMAIN: ${SITE_DOMAIN:-localhost}
+      GF_SERVER_ROOT_URL: https://%(domain)s/grafana/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
     ports: !override
       - "127.0.0.1:${GRAFANA_PORT:-3011}:3000"
 

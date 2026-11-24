@@ -31,6 +31,13 @@ map $uri $site_cache_control {
     default "no-cache";
     ~^/assets/ "public, max-age=31536000, immutable";
     ~^/api/ "no-store";
+    ~^/admin/ "no-store";
+    ~^/grafana/ "";
+}
+
+map $http_upgrade $grafana_connection {
+    default upgrade;
+    '' close;
 }
 
 server {

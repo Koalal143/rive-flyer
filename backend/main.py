@@ -10,8 +10,10 @@ from typing import Literal
 import httpx
 from fastapi import FastAPI, HTTPException, Request, Response
 from pydantic import BaseModel, Field, TypeAdapter
+from starlette.concurrency import run_in_threadpool
 
 from analytics import router as analytics_router
+from survey import initialize_survey, router as survey_router
 
 SEARCH_URL = "https://search-maps.yandex.ru/v1/"
 SEARCH_RADII_KM = (12, 50, 150)
@@ -137,6 +139,7 @@ async def lifespan(app: FastAPI):
 
     app.state.map_key = os.getenv("YANDEX_MAPS_API_KEY", "").strip() or None
     app.state.search_key = os.getenv("YANDEX_SEARCH_API_KEY", "").strip() or None
+    await run_in_threadpool(initialize_survey)
 
     async with httpx.AsyncClient(timeout=httpx.Timeout(5, connect=3)) as client:
         app.state.search_client = client
@@ -145,6 +148,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="RiveGaucheMVP — поиск магазинов", lifespan=lifespan)
 app.include_router(analytics_router)
+app.include_router(survey_router)
 
 
 @app.get("/api/maps/config", response_model=MapConfig)

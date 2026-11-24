@@ -15,6 +15,19 @@ STORES = {"app_store", "google_play", "rustore"}
 SURVEY_ANSWERS = {"store_interest", "gift_only", "neutral", "no_visit"}
 
 
+def connect_analytics() -> psycopg.Connection:
+    host = os.getenv("ANALYTICS_DB_HOST")
+    if not host:
+        raise HTTPException(503, detail="analytics_not_configured")
+    return psycopg.connect(
+        host=host,
+        dbname="rivegauche_analytics",
+        user="analytics_writer",
+        password=os.environ["ANALYTICS_DB_PASSWORD"],
+        connect_timeout=3,
+    )
+
+
 class Event(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -47,22 +60,12 @@ class Event(BaseModel):
 
 @router.post("/events", status_code=204)
 def record_event(event: Event) -> Response:
-    host = os.getenv("ANALYTICS_DB_HOST")
-    if not host:
-        raise HTTPException(503, detail="analytics_not_configured")
-
     qr_hash = sha256(event.qr.encode()).hexdigest() if event.qr else None
     event_id = event.id
     if event.kind in {"map_open", "survey_answer"}:
         event_id = uuid5(event.visit_id, f"rivegauche:{event.kind}")
     try:
-        with psycopg.connect(
-            host=host,
-            dbname="rivegauche_analytics",
-            user="analytics_writer",
-            password=os.environ["ANALYTICS_DB_PASSWORD"],
-            connect_timeout=3,
-        ) as connection:
+        with connect_analytics() as connection:
             insert = connection.execute(
                 """
                 INSERT INTO analytics_events (id, visit_id, kind, target, duration_ms, qr_hash)

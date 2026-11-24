@@ -71,7 +71,7 @@ jobs:
           # Compose gives inherited shell variables priority over --env-file.
           unset COMPOSE_PROFILES SITE_DOMAIN CERTBOT_EMAIL \
             ANALYTICS_DB_PASSWORD ANALYTICS_READER_PASSWORD GRAFANA_ADMIN_PASSWORD GRAFANA_PORT \
-            YANDEX_MAPS_API_KEY YANDEX_SEARCH_API_KEY STORE_CATALOG_PATH
+            YANDEX_MAPS_API_KEY YANDEX_SEARCH_API_KEY STORE_CATALOG_PATH SURVEY_ADMIN_PASSWORD
           printf 'Deploying %s from %s using .env.prod\n' "$revision" "$PWD"
 
           compose=(docker compose --env-file .env.prod -f compose.yaml -f compose.prod.yaml)
@@ -91,13 +91,14 @@ jobs:
           fi
           for ((attempt = 0; attempt < 36; attempt++)); do
             if "${check[@]}" --resolve "$domain:443:127.0.0.1" \
-                "https://$domain/" "https://$domain/api/maps/config" > /dev/null 2>&1; then
+                "https://$domain/" "https://$domain/api/maps/config" \
+                "https://$domain/grafana/api/health" > /dev/null 2>&1; then
               redirect=$("${check[@]}" -o /dev/null -w '%{redirect_url}' 'http://127.0.0.1/?qr=health-check')
               test "$redirect" = "https://$domain/?qr=health-check"
               exit 0
             fi
             sleep 5
           done
-          "${compose[@]}" logs --tail=35 nginx certbot
+          "${compose[@]}" logs --tail=35 nginx certbot grafana
           exit 1
           REMOTE
