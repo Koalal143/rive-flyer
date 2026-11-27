@@ -32,6 +32,7 @@ map $uri $site_cache_control {
     ~^/assets/ "public, max-age=31536000, immutable";
     ~^/api/ "no-store";
     ~^/admin/ "no-store";
+    ~^/gift/ "no-store";
     ~^/grafana/ "";
 }
 

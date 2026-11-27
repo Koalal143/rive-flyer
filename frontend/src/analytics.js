@@ -1,11 +1,6 @@
 const visitKey = 'rg-analytics-visit';
 const idleLimit = 30 * 60 * 1000;
 const qrFormat = /^[A-Za-z0-9_-]{1,100}$/;
-const appHosts = {
-  'apps.apple.com': 'app_store',
-  'play.google.com': 'google_play',
-  'www.rustore.ru': 'rustore',
-};
 let currentVisit;
 
 function newId() {
@@ -56,36 +51,35 @@ export function trackEvent(kind, details, id) {
   void eventRequest(kind, details, id).catch(() => {});
 }
 
-export function hasCompletedSurvey() {
-  return getVisit().offerSurveyCompleted === true;
+export function getSurveyGiftCode() {
+  try {
+    return sessionStorage.getItem('rg-survey-gift-code');
+  } catch {
+    return null;
+  }
 }
 
 export async function submitOfferSurvey(answers) {
   const visit = getVisit();
-  const response = await fetch('/api/survey/responses', {
+  const response = await fetch('/api/survey/v2/responses', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ visit_id: visit.id, ...answers }),
   });
   if (!response.ok) throw new Error('Не удалось сохранить ответы');
-  visit.offerSurveyCompleted = true;
+  const { gift_code: giftCode } = await response.json();
+  if (!giftCode) throw new Error('Не удалось получить QR-код');
   saveVisit(visit);
+  try {
+    sessionStorage.setItem('rg-survey-gift-code', giftCode);
+  } catch {
+    // The current document can display the code even without storage.
+  }
+  return giftCode;
 }
 
 export function startAnalytics(productId) {
   const visit = getVisit();
-
-  function outbound(event) {
-    if (event.defaultPrevented || (event.type === 'auxclick' && event.button !== 1)) return;
-    const anchor = event.target.closest?.('a[href]');
-    if (!anchor) return;
-    const url = new URL(anchor.href, location.href);
-    if (url.hostname === 'rivegauche.ru' || url.hostname === 'www.rivegauche.ru') {
-      trackEvent('site_click');
-    } else if (Object.hasOwn(appHosts, url.hostname)) {
-      trackEvent('app_click', { target: appHosts[url.hostname] });
-    }
-  }
 
   let visibleSince = null;
   let opened = false;
@@ -141,8 +135,6 @@ export function startAnalytics(productId) {
 
   const interval = setInterval(flush, 15000);
   document.addEventListener('visibilitychange', visibilityChanged);
-  document.addEventListener('click', outbound);
-  document.addEventListener('auxclick', outbound);
   window.addEventListener('pagehide', pause);
   window.addEventListener('pageshow', resume);
   resume();
@@ -151,8 +143,6 @@ export function startAnalytics(productId) {
     pause();
     clearInterval(interval);
     document.removeEventListener('visibilitychange', visibilityChanged);
-    document.removeEventListener('click', outbound);
-    document.removeEventListener('auxclick', outbound);
     window.removeEventListener('pagehide', pause);
     window.removeEventListener('pageshow', resume);
   };

@@ -51,19 +51,6 @@
 .locator-result p { margin-top: 5px; color: var(--muted); line-height: 1.38; }
 .locator-address { margin-top: 5px; font-style: normal; line-height: 1.38; overflow-wrap: anywhere; }
 .locator-result .locator-distance { color: var(--cherry); font-size: .86rem; font-weight: 700; margin: 0 0 6px; }
-.locator-result .locator-gift {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: #f1eaed;
-  color: #615158;
-  font-size: .83rem;
-  font-weight: 700;
-}
-.locator-result .locator-gift--available { background: #e4efe7; color: #2c6344; }
-.locator-result .locator-gift--empty { background: #f7e5eb; color: var(--cherry); }
-
 .locator-map-panel { position: relative; margin-top: 17px; }
 .locator-map {
   width: 100%;
@@ -129,7 +116,6 @@
 }
 .locator-marker[aria-pressed='true'] .locator-pin { display: grid; }
 .locator-pin span { color: #f5d9e4; }
-.locator-pin--available span:last-child { color: #c8efce; }
 .locator-pin .locator-pin-address { color: #fff; font-weight: 450; overflow-wrap: anywhere; }
 .locator-pin::after {
   position: absolute;

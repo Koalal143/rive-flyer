@@ -3,7 +3,7 @@ import os
 import secrets
 from html import escape
 from typing import Annotated, Literal
-from uuid import UUID
+from uuid import UUID, uuid4
 from zoneinfo import ZoneInfo
 
 import psycopg
@@ -25,49 +25,52 @@ ADMIN_HEADERS = {
     "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; "
     "frame-ancestors 'none'; base-uri 'none'",
 }
-MOTIVATIONS = {
-    "gift": "Бальзам в подарок",
-    "selection": "Товар или цена из подборки",
-    "on_the_way": "Магазин по пути",
-    "none": "Ничего из перечисленного",
-    "other": "Другое",
+PRICE_LEVEL = {
+    "much_lower": "Значительно ниже", "lower": "Скорее ниже", "same": "Примерно такой же",
+    "higher": "Скорее выше", "much_higher": "Значительно выше", "unsure": "Затрудняюсь ответить",
 }
-BARRIERS = {
-    "in_a_hurry": "Спешу",
-    "out_of_the_way": "Магазин не по пути",
-    "gift_uninteresting": "Подарок неинтересен",
-    "no_cosmetics_needed": "Сейчас не нужна косметика",
-    "unclear_terms": "Условия непонятны",
-    "none": "Ничего не помешало бы",
+PRICE_EXPECTATIONS = {
+    "much_lower": "Значительно ниже ожидаемых", "lower": "Немного ниже ожидаемых",
+    "same": "Соответствуют ожиданиям", "higher": "Немного выше ожидаемых",
+    "much_higher": "Значительно выше ожидаемых", "unsure": "У меня не было определённых ожиданий",
 }
-RECALL = {"nothing": "Ничего", "did_not_view": "Не смотрел подборку"}
+VISIT_MOTIVATIONS = {
+    "prices": "Цены на представленные товары", "assortment": "Ассортимент товаров",
+    "gift": "Бальзам в подарок", "location": "Удобное расположение магазина",
+    "none": "Ничего из перечисленного", "other": "Другое",
+}
+PriceChoice = Literal["much_lower", "lower", "same", "higher", "much_higher", "unsure"]
 
 
-class SurveyResponse(BaseModel):
+class GiftSurveyResponse(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     visit_id: UUID
-    motivations: list[Literal["gift", "selection", "on_the_way", "none", "other"]] = Field(min_length=1, max_length=4)
-    barriers: list[Literal[
-        "in_a_hurry", "out_of_the_way", "gift_uninteresting", "no_cosmetics_needed", "unclear_terms", "none",
-    ]] = Field(min_length=1, max_length=5)
+    price_level: PriceChoice
+    affordability: int = Field(ge=1, le=5, strict=True)
+    purchase_intent: int = Field(ge=1, le=5, strict=True)
+    price_expectations: PriceChoice
+    motivations: list[Literal["prices", "assortment", "gift", "location", "none", "other"]] = Field(
+        min_length=1, max_length=5,
+    )
     motivation_other: str = Field(default="", max_length=250)
-    clarity: str = Field(min_length=1, max_length=1000)
-    recall_kind: Literal["text", "nothing", "did_not_view"]
-    recall_text: str = Field(default="", max_length=1000)
+    barrier: str = Field(min_length=1, max_length=1000)
 
     @model_validator(mode="after")
     def validate_answers(self):
-        for options in (self.motivations, self.barriers):
-            if len(set(options)) != len(options) or ("none" in options and len(options) > 1):
-                raise ValueError("options must be distinct and none must stand alone")
-        if ("other" in self.motivations) != bool(self.motivation_other):
-            raise ValueError("other requires explanatory text")
-        if (self.recall_kind == "text") != bool(self.recall_text):
-            raise ValueError("recall text is required only for a written answer")
-        if any("\x00" in value for value in (self.motivation_other, self.clarity, self.recall_text)):
+        if len(set(self.motivations)) != len(self.motivations) or (
+            "none" in self.motivations and len(self.motivations) > 1
+        ):
+            raise ValueError("motivations must be distinct and none must stand alone")
+        if self.motivation_other and "other" not in self.motivations:
+            raise ValueError("motivation_other requires other")
+        if "\x00" in self.motivation_other or "\x00" in self.barrier:
             raise ValueError("answers cannot contain null characters")
         return self
+
+
+class GiftCode(BaseModel):
+    gift_code: UUID
 
 
 def initialize_survey() -> None:
@@ -76,50 +79,87 @@ def initialize_survey() -> None:
     with connect_analytics() as connection:
         connection.execute("SELECT pg_advisory_xact_lock(912412304)")
         connection.execute("""
-            CREATE TABLE IF NOT EXISTS offer_survey_responses (
+            CREATE TABLE IF NOT EXISTS offer_survey_v2 (
                 visit_id uuid PRIMARY KEY,
+                price_level text NOT NULL,
+                affordability smallint NOT NULL CHECK (affordability BETWEEN 1 AND 5),
+                purchase_intent smallint NOT NULL CHECK (purchase_intent BETWEEN 1 AND 5),
+                price_expectations text NOT NULL,
                 motivations text[] NOT NULL,
-                barriers text[] NOT NULL,
                 motivation_other text NOT NULL,
-                clarity text NOT NULL,
-                recall_kind text NOT NULL,
-                recall_text text NOT NULL,
+                barrier text NOT NULL,
+                gift_code uuid UNIQUE NOT NULL,
                 recorded_at timestamptz NOT NULL DEFAULT now()
             )
         """)
         connection.execute("""
-            CREATE INDEX IF NOT EXISTS offer_survey_responses_time
-            ON offer_survey_responses (recorded_at DESC, visit_id DESC)
+            CREATE INDEX IF NOT EXISTS offer_survey_v2_time ON offer_survey_v2 (recorded_at DESC, visit_id DESC)
         """)
         connection.execute("""
-            CREATE OR REPLACE VIEW offer_survey_selections AS
-            SELECT recorded_at, 'motivation'::text AS question, unnest(motivations) AS option
-            FROM offer_survey_responses
+            CREATE OR REPLACE VIEW offer_survey_v2_selections AS
+            SELECT s.recorded_at, answer.question, answer.option
+            FROM offer_survey_v2 AS s
+            CROSS JOIN LATERAL (
+                VALUES ('price_level', s.price_level), ('affordability', s.affordability::text),
+                       ('purchase_intent', s.purchase_intent::text), ('price_expectations', s.price_expectations)
+            ) AS answer(question, option)
             UNION ALL
-            SELECT recorded_at, 'barrier'::text AS question, unnest(barriers) AS option
-            FROM offer_survey_responses
+            SELECT recorded_at, 'motivation', unnest(motivations) FROM offer_survey_v2
         """)
-        connection.execute("GRANT SELECT ON offer_survey_selections TO analytics_reader")
+        connection.execute("GRANT SELECT ON offer_survey_v2_selections TO analytics_reader")
 
 
-@router.post("/api/survey/responses", status_code=204)
-def save_survey(response: SurveyResponse) -> Response:
+@router.post("/api/survey/v2/responses", response_model=GiftCode)
+def save_gift_survey(response: GiftSurveyResponse) -> GiftCode:
     try:
         with connect_analytics() as connection:
-            connection.execute(
+            saved = connection.execute(
                 """
-                INSERT INTO offer_survey_responses (
-                    visit_id, motivations, barriers, motivation_other, clarity, recall_kind, recall_text
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (visit_id) DO NOTHING
+                INSERT INTO offer_survey_v2 (
+                    visit_id, price_level, affordability, purchase_intent, price_expectations,
+                    motivations, motivation_other, barrier, gift_code
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (visit_id) DO NOTHING RETURNING gift_code
                 """,
-                (response.visit_id, response.motivations, response.barriers, response.motivation_other,
-                 response.clarity, response.recall_kind, response.recall_text),
-            )
+                (response.visit_id, response.price_level, response.affordability, response.purchase_intent,
+                 response.price_expectations, response.motivations, response.motivation_other,
+                 response.barrier, uuid4()),
+            ).fetchone()
+            if saved is None:
+                saved = connection.execute(
+                    "SELECT gift_code FROM offer_survey_v2 WHERE visit_id = %s", (response.visit_id,),
+                ).fetchone()
     except psycopg.Error as error:
-        logger.warning("Could not save survey response: %s", type(error).__name__)
+        logger.warning("Could not save gift survey: %s", type(error).__name__)
         raise HTTPException(503, detail="survey_unavailable") from None
-    return Response(status_code=204)
+    return GiftCode(gift_code=saved[0])
+
+
+@router.get("/gift/{gift_code}", response_class=HTMLResponse, include_in_schema=False)
+def verify_gift(gift_code: UUID) -> HTMLResponse:
+    try:
+        with connect_analytics() as connection:
+            issued = connection.execute(
+                "SELECT 1 FROM offer_survey_v2 WHERE gift_code = %s", (gift_code,),
+            ).fetchone()
+    except psycopg.Error as error:
+        logger.warning("Could not verify gift code: %s", type(error).__name__)
+        raise HTTPException(503, detail="gift_verification_unavailable") from None
+    title = "Демонстрационный код подтверждён" if issued else "Код не найден"
+    message = ("Код создан в учебном прототипе и не даёт права на получение подарка в РИВ ГОШ."
+               if issued else "Проверьте QR-код, выданный после опроса.")
+    return HTMLResponse(f"""<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title} — Учебный эксперимент</title>
+<main style="max-width:34rem;margin:12vh auto;padding:1.5rem;font:1rem/1.5 system-ui,sans-serif;color:#292024">
+<p style="font-weight:700;color:#862b4c">Учебный эксперимент</p>
+<h1>{title}</h1>
+<p>{message}</p>
+<a href="/#survey" style="color:#862b4c">На лендинг</a>
+</main>
+</html>""", status_code=200 if issued else 404, headers=ADMIN_HEADERS)
 
 
 def require_admin(request: Request, credentials: Annotated[HTTPBasicCredentials | None, Depends(basic_auth)]) -> None:
@@ -136,16 +176,18 @@ def require_admin(request: Request, credentials: Annotated[HTTPBasicCredentials 
 
 
 def render_response(row) -> str:
-    recorded_at, motivations, barriers, other, clarity, recall_kind, recall_text = row
+    recorded_at, price_level, affordability, intent, expectations, motivations, other, barrier = row
     date = recorded_at.astimezone(MOSCOW)
-    motivation_labels = ", ".join(MOTIVATIONS[option] for option in motivations)
+    motivation_labels = ", ".join(VISIT_MOTIVATIONS[option] for option in motivations)
     if other:
         motivation_labels += f" — {other}"
     answers = (
+        ("Уровень цен", PRICE_LEVEL[price_level]),
+        ("Доступность цен", f"{affordability} из 5"),
+        ("Готовность рассмотреть магазин", f"{intent} из 5"),
+        ("Цены и ожидания", PRICE_EXPECTATIONS[expectations]),
         ("Что побудило бы зайти", motivation_labels),
-        ("Что помешало бы зайти", ", ".join(BARRIERS[option] for option in barriers)),
-        ("Как получить бальзам", clarity),
-        ("Что запомнилось из подборки", RECALL.get(recall_kind, recall_text)),
+        ("Что помешало бы зайти", barrier),
     )
     details = "".join(
         f"<div><dt>{label}</dt><dd>{escape(value)}</dd></div>" for label, value in answers
@@ -157,13 +199,14 @@ def render_response(row) -> str:
 def survey_admin(page: Annotated[int, Query(ge=1, le=100000)] = 1) -> HTMLResponse:
     try:
         with connect_analytics() as connection:
-            total = connection.execute("SELECT count(*) FROM offer_survey_responses").fetchone()[0]
+            total = connection.execute("SELECT count(*) FROM offer_survey_v2").fetchone()[0]
             last_page = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
             page = min(page, last_page)
             rows = connection.execute(
                 """
-                SELECT recorded_at, motivations, barriers, motivation_other, clarity, recall_kind, recall_text
-                FROM offer_survey_responses
+                SELECT recorded_at, price_level, affordability, purchase_intent, price_expectations,
+                       motivations, motivation_other, barrier
+                FROM offer_survey_v2
                 ORDER BY recorded_at DESC, visit_id DESC
                 LIMIT %s OFFSET %s
                 """,

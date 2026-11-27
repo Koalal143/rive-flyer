@@ -1,15 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { trackEvent } from './analytics.js';
+import { ExperimentButton } from './ExperimentNotice.jsx';
 
-const yandexSearch = 'https://yandex.ru/maps/?text=' + encodeURIComponent('РИВ ГОШ');
 const decimal = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 });
 let loadingMaps;
-
-function giftStatus({ gift_stock: stock }) {
-  if (stock == null) return { tone: 'unknown', label: 'Наличие не подтверждено' };
-  if (stock === 0) return { tone: 'empty', label: 'Подарки закончились' };
-  return { tone: 'available', label: 'Есть подарок' };
-}
 
 function loadYandexMaps(key) {
   if (!loadingMaps) {
@@ -72,7 +66,6 @@ function StoreMap({ mapKey, places, selected, onSelect }) {
 
       markers.current = places.map(({ store }, index) => {
         const button = document.createElement('button');
-        const gift = giftStatus(store);
         const name = [store.name, store.address].filter(Boolean).join(', ');
         button.type = 'button';
         button.className = 'locator-marker';
@@ -82,7 +75,7 @@ function StoreMap({ mapKey, places, selected, onSelect }) {
         button.addEventListener('click', () => onSelect(index));
 
         const detail = document.createElement('span');
-        detail.className = `locator-pin locator-pin--${gift.tone}`;
+        detail.className = 'locator-pin';
         detail.setAttribute('aria-hidden', 'true');
         const brand = document.createElement('strong');
         brand.textContent = 'РИВ ГОШ';
@@ -93,9 +86,6 @@ function StoreMap({ mapKey, places, selected, onSelect }) {
           address.textContent = store.address;
           detail.append(address);
         }
-        const availability = document.createElement('span');
-        availability.textContent = gift.label;
-        detail.append(availability);
         button.append(detail);
 
         const entity = new YMapMarker({
@@ -138,7 +128,7 @@ function StoreMap({ mapKey, places, selected, onSelect }) {
     <div className="locator-map-panel">
       <div className="locator-map" ref={container} role="region" aria-label="Магазины РИВ ГОШ на карте" hidden={status === 'error'} />
       {status === 'loading' && <p className="locator-map-note" role="status">Загружаем карту…</p>}
-      {status === 'error' && <p className="locator-map-note" role="status">Карта не загрузилась. Откройте адрес по ссылке выше.</p>}
+      {status === 'error' && <p className="locator-map-note" role="status">Карта не загрузилась. Адрес магазина указан выше.</p>}
       {status === 'ready' && (
         <div className="fine-print locator-map-meta">
           {places.length > 1 && <span>Нажмите на метку, чтобы выбрать магазин.</span>}
@@ -159,19 +149,12 @@ function getPosition() {
 
 function positionError(error) {
   if (error.code === 1) {
-    return 'Доступ к геолокации закрыт. Разрешите его в настройках сайта или воспользуйтесь поиском на Яндекс Картах.';
+    return 'Доступ к геолокации закрыт. Разрешите его в настройках сайта и попробуйте ещё раз.';
   }
   if (error.code === 3) {
     return 'Определение местоположения заняло слишком много времени. Попробуйте ещё раз.';
   }
-  return 'Не удалось определить местоположение. Попробуйте ещё раз или откройте Яндекс Карты.';
-}
-
-function storeLink(store) {
-  const coordinates = `${store.longitude},${store.latitude}`;
-  const url = new URL('https://yandex.ru/maps/');
-  url.search = new URLSearchParams({ ll: coordinates, z: '17', pt: `${coordinates},pm2rdm` }).toString();
-  return url.href;
+  return 'Не удалось определить местоположение. Попробуйте ещё раз.';
 }
 
 export function StoreLocator() {
@@ -199,7 +182,7 @@ export function StoreLocator() {
 
   async function locate() {
     if (!window.isSecureContext || !navigator.geolocation) {
-      setLookup({ phase: 'error', message: 'Для геолокации откройте сайт по HTTPS или воспользуйтесь Яндекс Картами.' });
+      setLookup({ phase: 'error', message: 'Для геолокации откройте сайт по HTTPS.' });
       return;
     }
 
@@ -230,7 +213,7 @@ export function StoreLocator() {
       setSelected(0);
       setLookup({ phase: 'found', places: [{ store, distance_m }, ...other_stores] });
     } catch {
-      setLookup({ phase: 'error', message: 'Поиск магазинов сейчас недоступен. Попробуйте ещё раз или откройте Яндекс Карты.' });
+      setLookup({ phase: 'error', message: 'Поиск магазинов сейчас недоступен. Попробуйте ещё раз.' });
     }
   }
 
@@ -241,7 +224,6 @@ export function StoreLocator() {
   const distance = result && (result.distance_m < 1000
     ? `${decimal.format(result.distance_m)} м`
     : `${decimal.format(result.distance_m / 1000)} км`);
-  const gift = result && giftStatus(result.store);
   const action = result ? 'Обновить местоположение' : 'Найти ближайший магазин';
 
   return (
@@ -257,7 +239,7 @@ export function StoreLocator() {
       </div>
       <div className={result ? 'visually-hidden' : 'locator-status'} role="status">
         {status}
-        {config && !config.search_source && 'Онлайн-поиск на сайте пока недоступен. Магазины можно посмотреть на Яндекс Картах.'}
+        {config && !config.search_source && 'Поиск магазинов на сайте пока недоступен.'}
         {places && 'Ближайший магазин найден.'}
       </div>
       {result && (
@@ -267,16 +249,15 @@ export function StoreLocator() {
             <h3>{result.store.name}</h3>
             {result.store.address && <address className="locator-address">{result.store.address}</address>}
             {result.store.hours && <p>{result.store.hours}</p>}
-            <p className={`locator-gift locator-gift--${gift.tone}`}>{gift.label}</p>
           </div>
-          <a className="button button-outline" href={storeLink(result.store)} target="_blank" rel="noopener noreferrer">
+          <ExperimentButton className="button button-outline">
             Открыть в Яндекс Картах
-          </a>
+          </ExperimentButton>
         </div>
       )}
       {places && <StoreMap places={places} selected={selected} onSelect={setSelected} mapKey={config?.map_key} />}
       {(phase === 'error' || (config && !config.search_source)) && (
-        <a className="locator-external" href={yandexSearch} target="_blank" rel="noopener noreferrer">Поиск на Яндекс Картах</a>
+        <ExperimentButton className="locator-external link-button">Поиск на Яндекс Картах</ExperimentButton>
       )}
       {config?.search_source === 'yandex' && (
         <p className="fine-print locator-privacy">Для поиска приблизительное местоположение передаётся Яндекс Картам.</p>

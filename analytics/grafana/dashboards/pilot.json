@@ -8,7 +8,7 @@
   ],
   "timezone": "Europe/Moscow",
   "schemaVersion": 41,
-  "version": 4,
+  "version": 6,
   "editable": false,
   "refresh": "30s",
   "time": {
@@ -163,8 +163,8 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "Клики на сайт РИВ ГОШ",
-      "description": "Клики на внешний сайт, включая ссылки на товары и каталог магазинов.",
+      "title": "Клики по кнопкам РИВ ГОШ",
+      "description": "Нажатия кнопок сайта, товаров и каталога магазинов.",
       "datasource": {
         "type": "postgres",
         "uid": "rivegauche-events"
@@ -211,8 +211,8 @@
     {
       "id": 5,
       "type": "stat",
-      "title": "Клики на приложение",
-      "description": "Переходы по кнопкам App Store, Google Play и RuStore.",
+      "title": "Клики по кнопкам приложений",
+      "description": "Нажатия кнопок App Store, Google Play и RuStore.",
       "datasource": {
         "type": "postgres",
         "uid": "rivegauche-events"
@@ -475,8 +475,8 @@
     {
       "id": 12,
       "type": "timeseries",
-      "title": "Исходящие клики по дням",
-      "description": "Клики на сайт РИВ ГОШ и на кнопки магазинов приложений.",
+      "title": "Клики по кнопкам по дням",
+      "description": "Нажатия кнопок РИВ ГОШ и магазинов приложений.",
       "datasource": {
         "type": "postgres",
         "uid": "rivegauche-events"
@@ -587,8 +587,8 @@
     {
       "id": 15,
       "type": "barchart",
-      "title": "Что побудило бы зайти в магазин",
-      "description": "Количество выборов каждого варианта за выбранный период. В одном ответе можно выбрать несколько вариантов.",
+      "title": "Уровень цен относительно других магазинов",
+      "description": "Распределение ответов за выбранный период.",
       "datasource": {
         "type": "postgres",
         "uid": "rivegauche-events"
@@ -609,7 +609,7 @@
           "format": "table",
           "editorMode": "code",
           "rawQuery": true,
-          "rawSql": "WITH answers (id, label, sort_order) AS (VALUES\n    ('gift', 'Бальзам в подарок', 1),\n    ('selection', 'Товар или цена из подборки', 2),\n    ('on_the_way', 'Магазин по пути', 3),\n    ('none', 'Ничего из перечисленного', 4),\n    ('other', 'Другое', 5)\n)\nSELECT answers.label AS \"Ответ\", count(selections.option) AS \"Выборы\"\nFROM answers\nLEFT JOIN offer_survey_selections AS selections ON selections.question = 'motivation'\n    AND selections.option = answers.id AND $__timeFilter(selections.recorded_at)\nGROUP BY answers.id, answers.label, answers.sort_order\nORDER BY answers.sort_order"
+          "rawSql": "WITH answers (id, label, sort_order) AS (VALUES\n    ('much_lower', 'Значительно ниже', 1),\n    ('lower', 'Скорее ниже', 2),\n    ('same', 'Примерно такой же', 3),\n    ('higher', 'Скорее выше', 4),\n    ('much_higher', 'Значительно выше', 5),\n    ('unsure', 'Затрудняюсь ответить', 6)\n)\nSELECT answers.label AS \"Ответ\", count(selections.option) AS \"Выборы\"\nFROM answers\nLEFT JOIN offer_survey_v2_selections AS selections ON selections.question = 'price_level'\n    AND selections.option = answers.id AND $__timeFilter(selections.recorded_at)\nGROUP BY answers.id, answers.label, answers.sort_order\nORDER BY answers.sort_order"
         }
       ],
       "options": {
@@ -641,8 +641,8 @@
     {
       "id": 16,
       "type": "barchart",
-      "title": "Что помешало бы зайти в магазин",
-      "description": "Количество выборов каждого варианта за выбранный период. В одном ответе можно выбрать несколько вариантов.",
+      "title": "В РИВ ГОШ можно найти доступные цены",
+      "description": "Распределение ответов за выбранный период.",
       "datasource": {
         "type": "postgres",
         "uid": "rivegauche-events"
@@ -663,7 +663,7 @@
           "format": "table",
           "editorMode": "code",
           "rawQuery": true,
-          "rawSql": "WITH answers (id, label, sort_order) AS (VALUES\n    ('in_a_hurry', 'Спешу', 1),\n    ('out_of_the_way', 'Магазин не по пути', 2),\n    ('gift_uninteresting', 'Подарок неинтересен', 3),\n    ('no_cosmetics_needed', 'Сейчас не нужна косметика', 4),\n    ('unclear_terms', 'Условия непонятны', 5),\n    ('none', 'Ничего не помешало бы', 6)\n)\nSELECT answers.label AS \"Ответ\", count(selections.option) AS \"Выборы\"\nFROM answers\nLEFT JOIN offer_survey_selections AS selections ON selections.question = 'barrier'\n    AND selections.option = answers.id AND $__timeFilter(selections.recorded_at)\nGROUP BY answers.id, answers.label, answers.sort_order\nORDER BY answers.sort_order"
+          "rawSql": "WITH answers (id, label, sort_order) AS (VALUES\n    ('1', '1', 1),\n    ('2', '2', 2),\n    ('3', '3', 3),\n    ('4', '4', 4),\n    ('5', '5', 5)\n)\nSELECT answers.label AS \"Ответ\", count(selections.option) AS \"Выборы\"\nFROM answers\nLEFT JOIN offer_survey_v2_selections AS selections ON selections.question = 'affordability'\n    AND selections.option = answers.id AND $__timeFilter(selections.recorded_at)\nGROUP BY answers.id, answers.label, answers.sort_order\nORDER BY answers.sort_order"
         }
       ],
       "options": {
@@ -693,6 +693,168 @@
       }
     },
     {
+      "id": 17,
+      "type": "barchart",
+      "title": "Готовность рассмотреть РИВ ГОШ при следующей покупке",
+      "description": "Распределение ответов за выбранный период.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 44,
+        "w": 12,
+        "h": 11
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "WITH answers (id, label, sort_order) AS (VALUES\n    ('1', '1', 1),\n    ('2', '2', 2),\n    ('3', '3', 3),\n    ('4', '4', 4),\n    ('5', '5', 5)\n)\nSELECT answers.label AS \"Ответ\", count(selections.option) AS \"Выборы\"\nFROM answers\nLEFT JOIN offer_survey_v2_selections AS selections ON selections.question = 'purchase_intent'\n    AND selections.option = answers.id AND $__timeFilter(selections.recorded_at)\nGROUP BY answers.id, answers.label, answers.sort_order\nORDER BY answers.sort_order"
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Ответ",
+        "showValue": "always",
+        "groupWidth": 0.75,
+        "barWidth": 0.75,
+        "stacking": "none",
+        "legend": {
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 18,
+      "type": "barchart",
+      "title": "Цены в подборке и ожидания",
+      "description": "Распределение ответов за выбранный период.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 44,
+        "w": 12,
+        "h": 11
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "WITH answers (id, label, sort_order) AS (VALUES\n    ('much_lower', 'Значительно ниже ожидаемых', 1),\n    ('lower', 'Немного ниже ожидаемых', 2),\n    ('same', 'Соответствуют ожиданиям', 3),\n    ('higher', 'Немного выше ожидаемых', 4),\n    ('much_higher', 'Значительно выше ожидаемых', 5),\n    ('unsure', 'У меня не было определённых ожиданий', 6)\n)\nSELECT answers.label AS \"Ответ\", count(selections.option) AS \"Выборы\"\nFROM answers\nLEFT JOIN offer_survey_v2_selections AS selections ON selections.question = 'price_expectations'\n    AND selections.option = answers.id AND $__timeFilter(selections.recorded_at)\nGROUP BY answers.id, answers.label, answers.sort_order\nORDER BY answers.sort_order"
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Ответ",
+        "showValue": "always",
+        "groupWidth": 0.75,
+        "barWidth": 0.75,
+        "stacking": "none",
+        "legend": {
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 19,
+      "type": "barchart",
+      "title": "Что побудило бы зайти в РИВ ГОШ",
+      "description": "Количество выборов каждого варианта. Можно выбрать несколько ответов.",
+      "datasource": {
+        "type": "postgres",
+        "uid": "rivegauche-events"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 55,
+        "w": 24,
+        "h": 11
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "postgres",
+            "uid": "rivegauche-events"
+          },
+          "format": "table",
+          "editorMode": "code",
+          "rawQuery": true,
+          "rawSql": "WITH answers (id, label, sort_order) AS (VALUES\n    ('prices', 'Цены на представленные товары', 1),\n    ('assortment', 'Ассортимент товаров', 2),\n    ('gift', 'Бальзам в подарок', 3),\n    ('location', 'Удобное расположение магазина', 4),\n    ('none', 'Ничего из перечисленного', 5),\n    ('other', 'Другое', 6)\n)\nSELECT answers.label AS \"Ответ\", count(selections.option) AS \"Выборы\"\nFROM answers\nLEFT JOIN offer_survey_v2_selections AS selections ON selections.question = 'motivation'\n    AND selections.option = answers.id AND $__timeFilter(selections.recorded_at)\nGROUP BY answers.id, answers.label, answers.sort_order\nORDER BY answers.sort_order"
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "xField": "Ответ",
+        "showValue": "always",
+        "groupWidth": 0.75,
+        "barWidth": 0.75,
+        "stacking": "none",
+        "legend": {
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
       "id": 6,
       "type": "table",
       "title": "Товары в подборке",
@@ -703,7 +865,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 44,
+        "y": 66,
         "w": 15,
         "h": 8
       },
@@ -732,7 +894,7 @@
       },
       "gridPos": {
         "x": 15,
-        "y": 44,
+        "y": 66,
         "w": 9,
         "h": 8
       },
@@ -761,7 +923,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 52,
+        "y": 74,
         "w": 24,
         "h": 4
       },

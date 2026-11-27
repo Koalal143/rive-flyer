@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { rubles, selection } from './catalog.js';
+import { ExperimentButton } from './ExperimentNotice.jsx';
 
 export function productPath(product) {
   return `?product=${product.id}`;
@@ -135,7 +136,7 @@ export function ProductPage({ product }) {
         <div className="wrap detail-header-inner">
           <a className="detail-back" href={backHref}>{backLabel}</a>
           <a className="detail-campaign" href="./">Кофе и черешня</a>
-          <a className="detail-store" href="https://rivegauche.ru/" target="_blank" rel="noopener noreferrer">Сайт РИВ ГОШ</a>
+          <ExperimentButton className="detail-store link-button" eventKind="site_click">Сайт РИВ ГОШ</ExperimentButton>
         </div>
       </header>
       <main className="wrap product-page" id="product-main">
@@ -148,13 +149,13 @@ export function ProductPage({ product }) {
           <ProductGallery product={product} />
           <div className="detail-purchase">
             <div className="detail-price-row">
-              <strong className="detail-price">{isGift ? 'В подарок по флаеру' : rubles.format(product.price)}</strong>
+              <strong className="detail-price">{isGift ? 'Подарок в прототипе' : rubles.format(product.price)}</strong>
               <p className="detail-variant">{product.detail}</p>
             </div>
-            {isGift && <a className="button button-dark" href="./#shops">Где забрать подарок</a>}
-            <a href={product.url} className={isGift ? 'detail-pickup' : 'button button-dark'}
-              target="_blank" rel="noopener noreferrer">Открыть на сайте РИВ ГОШ</a>
-            {!isGift && <p className="fine-print">Цену и наличие в магазине можно уточнить на сайте РИВ ГОШ.</p>}
+            {isGift && <a className="button button-dark" href="./#survey">Пройти опрос</a>}
+            <ExperimentButton className={isGift ? 'detail-pickup link-button' : 'button button-dark'}
+              eventKind="site_click">Открыть на сайте РИВ ГОШ</ExperimentButton>
+            {!isGift && <p className="fine-print">Цена приведена для демонстрации подборки.</p>}
           </div>
         </div>
         <section className="product-specs" aria-labelledby="specs-title">

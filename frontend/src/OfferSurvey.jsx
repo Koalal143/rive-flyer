@@ -1,82 +1,112 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { hasCompletedSurvey, submitOfferSurvey } from './analytics.js';
+import qrcode from 'qrcode-generator';
+import { getSurveyGiftCode, submitOfferSurvey } from './analytics.js';
 import './survey.css';
 
 const questions = [
   {
-    title: 'Если бы предложение действовало, что могло бы вас побудить зайти в магазин РИВ ГОШ?',
-    field: 'motivations',
+    title: 'Как вы оцениваете уровень цен в РИВ ГОШ по сравнению с другими магазинами косметики?',
+    field: 'price_level',
     options: [
+      ['much_lower', 'Значительно ниже'],
+      ['lower', 'Скорее ниже'],
+      ['same', 'Примерно такой же'],
+      ['higher', 'Скорее выше'],
+      ['much_higher', 'Значительно выше'],
+      ['unsure', 'Затрудняюсь ответить'],
+    ],
+  },
+  {
+    title: 'Насколько вы согласны с утверждением «В РИВ ГОШ можно найти косметику по доступным для меня ценам»?',
+    field: 'affordability',
+    scale: ['Совсем не согласен', 'Полностью согласен'],
+  },
+  {
+    title: 'Насколько вероятно, что при следующей покупке косметики вы рассмотрите РИВ ГОШ?',
+    field: 'purchase_intent',
+    scale: ['Крайне маловероятно', 'Очень вероятно'],
+  },
+  {
+    title: 'Как цены в представленной подборке соотносятся с вашими ожиданиями?',
+    field: 'price_expectations',
+    options: [
+      ['much_lower', 'Значительно ниже ожидаемых'],
+      ['lower', 'Немного ниже ожидаемых'],
+      ['same', 'Соответствуют ожиданиям'],
+      ['higher', 'Немного выше ожидаемых'],
+      ['much_higher', 'Значительно выше ожидаемых'],
+      ['unsure', 'У меня не было определённых ожиданий'],
+    ],
+  },
+  {
+    title: 'Что в представленной инициативе могло бы побудить вас посетить РИВ ГОШ?',
+    field: 'motivations',
+    multiple: true,
+    options: [
+      ['prices', 'Цены на представленные товары'],
+      ['assortment', 'Ассортимент товаров'],
       ['gift', 'Бальзам в подарок'],
-      ['selection', 'Товар или цена из подборки'],
-      ['on_the_way', 'Магазин по пути'],
+      ['location', 'Удобное расположение магазина'],
       ['none', 'Ничего из перечисленного'],
       ['other', 'Другое'],
     ],
   },
-  {
-    title: 'Что скорее всего помешало бы вам зайти?',
-    field: 'barriers',
-    options: [
-      ['in_a_hurry', 'Спешу'],
-      ['out_of_the_way', 'Магазин не по пути'],
-      ['gift_uninteresting', 'Подарок неинтересен'],
-      ['no_cosmetics_needed', 'Сейчас не нужна косметика'],
-      ['unclear_terms', 'Условия непонятны'],
-      ['none', 'Ничего не помешало бы'],
-    ],
-  },
-  { title: 'Как вы бы поняли, что нужно сделать, чтобы получить бальзам?', field: 'clarity' },
-  { title: 'Что из подборки товаров или цен запомнилось, если что-то запомнилось?', field: 'recall_text' },
+  { title: 'Что могло бы помешать вам посетить РИВ ГОШ?', field: 'barrier' },
 ];
 
-const recallOptions = [
-  ['nothing', 'Ничего'],
-  ['did_not_view', 'Не смотрел подборку'],
-];
+function GiftPass({ code, headingRef }) {
+  const url = new URL('/gift/' + encodeURIComponent(code), window.location.origin);
+  const qr = qrcode(0, 'M');
+  qr.addData(url.href);
+  qr.make();
+  const image = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(qr.createSvgTag(8));
 
-const emptyAnswers = {
-  motivations: [],
-  barriers: [],
-  motivation_other: '',
-  clarity: '',
-  recall_kind: 'text',
-  recall_text: '',
-};
+  return (
+    <div className="offer-survey-pass offer-survey-step">
+      <div>
+        <h2 ref={headingRef} tabIndex={-1}>Ваш QR-код готов</h2>
+        <p>Этот демонстрационный код показывает, как могло бы работать получение бальзама. В магазине код не действует.</p>
+        <div className="offer-survey-action">
+          <a className="button button-dark" href="#shops">Найти магазин</a>
+          <a className="text-button" href={image} download="rive-gauche-qr.svg">Сохранить QR-код</a>
+        </div>
+      </div>
+      <img width={212} height={212} src={image} alt="Демонстрационный QR-код учебного проекта" />
+    </div>
+  );
+}
 
 export function OfferSurvey() {
   const [step, setStep] = useState(-1);
-  const [answers, setAnswers] = useState(emptyAnswers);
-  const [completed, setCompleted] = useState(hasCompletedSurvey);
+  const [answers, setAnswers] = useState({ motivations: [], motivation_other: '', barrier: '' });
+  const [giftCode, setGiftCode] = useState(getSurveyGiftCode);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   const stepHeading = useRef(null);
   const question = questions[step];
   const lastStep = step === questions.length - 1;
-  const hasOther = step === 0 && answers.motivations.includes('other');
+  const selected = answers[question?.field];
+  const ready = question?.multiple ? selected.length > 0
+    : lastStep ? Boolean(selected.trim()) : Boolean(selected);
 
   useEffect(() => {
     if (step >= 0) stepHeading.current?.focus();
-  }, [step, completed]);
+  }, [step, giftCode]);
 
   function update(field, value) {
     setAnswers(previous => ({ ...previous, [field]: value }));
   }
 
-  function toggleOption(field, option, checked) {
+  function toggleMotivation(option, checked) {
     setAnswers(previous => {
-      const selected = previous[field];
-      const next = !checked ? selected.filter(value => value !== option)
-        : option === 'none' ? [option] : [...selected.filter(value => value !== 'none'), option];
-      return { ...previous, [field]: next };
+      const selectedOptions = previous.motivations;
+      let motivations;
+      if (!checked) motivations = selectedOptions.filter(value => value !== option);
+      else if (option === 'none') motivations = [option];
+      else motivations = [...selectedOptions.filter(value => value !== 'none'), option];
+      return { ...previous, motivations };
     });
   }
-
-  const ready = question?.options
-    ? answers[question.field].length > 0 && (!hasOther || Boolean(answers.motivation_other.trim()))
-    : lastStep
-      ? answers.recall_kind !== 'text' || Boolean(answers.recall_text.trim())
-      : Boolean(answers.clarity.trim());
 
   async function advance(event) {
     event.preventDefault();
@@ -88,13 +118,12 @@ export function OfferSurvey() {
     }
     setBusy(true);
     try {
-      await submitOfferSurvey({
+      const code = await submitOfferSurvey({
         ...answers,
         motivation_other: answers.motivations.includes('other') ? answers.motivation_other.trim() : '',
-        clarity: answers.clarity.trim(),
-        recall_text: answers.recall_kind === 'text' ? answers.recall_text.trim() : '',
+        barrier: answers.barrier.trim(),
       });
-      setCompleted(true);
+      setGiftCode(code);
     } catch {
       setError(true);
     } finally {
@@ -103,79 +132,83 @@ export function OfferSurvey() {
   }
 
   return (
-    <section className="wrap section offer-survey" aria-labelledby="offer-survey-title">
-      <h2 id="offer-survey-title" className={question || completed ? 'visually-hidden' : undefined}>
-        Как вы относитесь к нашему предложению?
-      </h2>
-      {completed ? (
-        <p className="offer-survey-thanks" ref={stepHeading} tabIndex={-1} role="status">Спасибо за ответы!</p>
-      ) : !question ? (
-        <div className="offer-survey-intro">
-          <p>4 вопроса</p>
-          <button type="button" className="button button-dark" onClick={() => setStep(0)}>Начать опрос</button>
-        </div>
-      ) : (
-        <form onSubmit={advance} aria-busy={busy}>
-          <p className="offer-survey-progress" id="offer-survey-progress">Вопрос {step + 1} из {questions.length}</p>
-          <progress value={step + 1} max={questions.length} aria-labelledby="offer-survey-progress" />
-          <div key={step} className="offer-survey-step">
-            <h3 id="offer-survey-question" ref={stepHeading} tabIndex={-1}>{question.title}</h3>
-            {question.options ? (
-              <fieldset aria-labelledby="offer-survey-question" disabled={busy}>
-                <p className="offer-survey-hint">Можно выбрать несколько вариантов</p>
-                <div className="offer-survey-options">
-                  {question.options.map(([id, label]) => (
-                    <label className="offer-survey-option" key={id}>
-                      <input type="checkbox" checked={answers[question.field].includes(id)}
-                        onChange={event => toggleOption(question.field, id, event.target.checked)} />
-                      <span>{label}</span>
-                    </label>
-                  ))}
-                </div>
-                {hasOther && (
-                  <label className="offer-survey-other">
-                    Что ещё могло бы вас побудить?
-                    <input type="text" value={answers.motivation_other} maxLength={250}
-                      onChange={event => update('motivation_other', event.target.value)} />
-                  </label>
-                )}
-              </fieldset>
-            ) : (
-              <>
-                <textarea aria-labelledby="offer-survey-question" placeholder="Ваш ответ" rows={3}
-                  value={lastStep && answers.recall_kind !== 'text' ? '' : answers[question.field]}
-                  disabled={busy} maxLength={1000} onChange={event => {
-                    const value = event.target.value;
-                    if (lastStep) setAnswers(previous => ({ ...previous, recall_kind: 'text', recall_text: value }));
-                    else update(question.field, value);
-                  }} />
-                {lastStep && (
-                  <fieldset className="offer-survey-shortcuts" aria-label="Готовые ответы" disabled={busy}>
-                    {recallOptions.map(([id, label]) => (
-                      <button type="button" key={id} aria-pressed={answers.recall_kind === id}
-                        onClick={() => update('recall_kind', answers.recall_kind === id ? 'text' : id)}>
-                        {label}
-                      </button>
+    <section className="section offer-survey" id="survey" aria-labelledby="offer-survey-title">
+      <div className="wrap offer-survey-inner">
+        <h2 id="offer-survey-title" className={question || giftCode ? 'visually-hidden' : undefined}>
+          Ответьте на шесть вопросов
+        </h2>
+        {giftCode ? (
+          <GiftPass code={giftCode} headingRef={stepHeading} />
+        ) : !question ? (
+          <div className="offer-survey-intro">
+            <p>После опроса здесь появится демонстрационный QR-код.</p>
+            <button type="button" className="button button-dark" onClick={() => setStep(0)}>Начать опрос</button>
+          </div>
+        ) : (
+          <form onSubmit={advance} aria-busy={busy}>
+            <p className="offer-survey-progress" id="offer-survey-progress">Вопрос {step + 1} из {questions.length}</p>
+            <progress value={step + 1} max={questions.length} aria-labelledby="offer-survey-progress" />
+            <div key={step} className="offer-survey-step">
+              <h3 id="offer-survey-question" ref={stepHeading} tabIndex={-1}>{question.title}</h3>
+              {question.scale ? (
+                <fieldset aria-labelledby="offer-survey-question" aria-describedby="offer-survey-scale" disabled={busy}>
+                  <div className="offer-survey-scale">
+                    {[1, 2, 3, 4, 5].map(value => (
+                      <label key={value}>
+                        <input type="radio" name={question.field} checked={selected === value}
+                          onChange={() => update(question.field, value)} />
+                        <span>{value}</span>
+                      </label>
                     ))}
-                  </fieldset>
-                )}
-              </>
-            )}
-          </div>
-          <div className="offer-survey-action">
-            {step > 0 && (
-              <button type="button" className="button button-outline" disabled={busy}
-                onClick={() => { setError(false); setStep(step - 1); }}>
-                Назад
+                  </div>
+                  <div className="offer-survey-scale-labels" id="offer-survey-scale">
+                    <span>1 — {question.scale[0].toLowerCase()}</span>
+                    <span>5 — {question.scale[1].toLowerCase()}</span>
+                  </div>
+                </fieldset>
+              ) : question.options ? (
+                <fieldset aria-labelledby="offer-survey-question" disabled={busy}>
+                  {question.multiple && <p className="offer-survey-hint">Можно выбрать несколько вариантов</p>}
+                  <div className="offer-survey-options">
+                    {question.options.map(([id, label]) => (
+                      <label className="offer-survey-option" key={id}>
+                        <input type={question.multiple ? 'checkbox' : 'radio'} name={question.field}
+                          checked={question.multiple ? selected.includes(id) : selected === id}
+                          onChange={event => question.multiple
+                            ? toggleMotivation(id, event.target.checked) : update(question.field, id)} />
+                        <span>{label}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {question.multiple && selected.includes('other') && (
+                    <label className="offer-survey-other">
+                      Ваш вариант
+                      <input type="text" value={answers.motivation_other} maxLength={250}
+                        onChange={event => update('motivation_other', event.target.value)} />
+                    </label>
+                  )}
+                </fieldset>
+              ) : (
+                <textarea aria-labelledby="offer-survey-question" placeholder="Ваш ответ" rows={3}
+                  value={selected} disabled={busy} maxLength={1000}
+                  onChange={event => update(question.field, event.target.value)} />
+              )}
+            </div>
+            <div className="offer-survey-action">
+              {step > 0 && (
+                <button type="button" className="text-button" disabled={busy}
+                  onClick={() => { setError(false); setStep(step - 1); }}>
+                  Назад
+                </button>
+              )}
+              <button type="submit" className="button button-dark" disabled={busy || !ready}>
+                {busy ? 'Отправляем…' : lastStep ? 'Получить QR-код' : 'Дальше'}
               </button>
-            )}
-            <button type="submit" className="button button-dark" disabled={busy || !ready}>
-              {busy ? 'Отправляем…' : lastStep ? 'Отправить ответы' : 'Дальше'}
-            </button>
-          </div>
-          {error && <p className="offer-survey-error" role="alert">Ответы не сохранились. Попробуйте отправить их ещё раз.</p>}
-        </form>
-      )}
+            </div>
+            {error && <p className="offer-survey-error" role="alert">Ответы не отправились. Попробуйте ещё раз.</p>}
+          </form>
+        )}
+      </div>
     </section>
   );
 }
