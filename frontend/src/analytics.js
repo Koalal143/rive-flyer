@@ -1,7 +1,17 @@
+const metricsParam = 'ignore-metrics';
+const ignoreMetrics = new URLSearchParams(window.location.search).get(metricsParam) === 'true';
+const surveyGiftKey = ignoreMetrics ? 'rg-survey-preview-gift-code' : 'rg-survey-gift-code';
 const visitKey = 'rg-analytics-visit';
 const idleLimit = 30 * 60 * 1000;
 const qrFormat = /^[A-Za-z0-9_-]{1,100}$/;
 let currentVisit;
+
+export function withMetricsPreference(href) {
+  if (!ignoreMetrics) return href;
+  const url = new URL(href, window.location.href);
+  url.searchParams.set(metricsParam, 'true');
+  return url.pathname + url.search + url.hash;
+}
 
 function newId() {
   return crypto.randomUUID?.() ?? Array.from(crypto.getRandomValues(new Uint8Array(16)),
@@ -48,30 +58,35 @@ function eventRequest(kind, details = {}, id = newId()) {
 }
 
 export function trackEvent(kind, details, id) {
+  if (ignoreMetrics) return;
   void eventRequest(kind, details, id).catch(() => {});
 }
 
 export function getSurveyGiftCode() {
   try {
-    return sessionStorage.getItem('rg-survey-gift-code');
+    return sessionStorage.getItem(surveyGiftKey);
   } catch {
     return null;
   }
 }
 
 export async function submitOfferSurvey(answers) {
-  const visit = getVisit();
-  const response = await fetch('/api/survey/v2/responses', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ visit_id: visit.id, ...answers }),
-  });
-  if (!response.ok) throw new Error('Не удалось сохранить ответы');
-  const { gift_code: giftCode } = await response.json();
-  if (!giftCode) throw new Error('Не удалось получить QR-код');
-  saveVisit(visit);
+  let giftCode = 'demo';
+  if (!ignoreMetrics) {
+    const visit = getVisit();
+    const response = await fetch('/api/survey/v2/responses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visit_id: visit.id, ...answers }),
+    });
+    if (!response.ok) throw new Error('Не удалось сохранить ответы');
+    const { gift_code } = await response.json();
+    if (!gift_code) throw new Error('Не удалось получить QR-код');
+    giftCode = gift_code;
+    saveVisit(visit);
+  }
   try {
-    sessionStorage.setItem('rg-survey-gift-code', giftCode);
+    sessionStorage.setItem(surveyGiftKey, giftCode);
   } catch {
     // The current document can display the code even without storage.
   }
@@ -79,6 +94,7 @@ export async function submitOfferSurvey(answers) {
 }
 
 export function startAnalytics(productId) {
+  if (ignoreMetrics) return;
   const visit = getVisit();
 
   let visibleSince = null;

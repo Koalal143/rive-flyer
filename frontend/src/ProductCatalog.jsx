@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { rubles, selection } from './catalog.js';
 import { ExperimentButton } from './ExperimentNotice.jsx';
+import { withMetricsPreference } from './analytics.js';
 
 const featuredProducts = selection.slice(0, 2);
 const otherProducts = selection.slice(2);
@@ -8,7 +9,7 @@ const comparisonDelay = 700;
 const comparisonThreshold = 0.24;
 
 export function productPath(product) {
-  return `?product=${product.id}`;
+  return withMetricsPreference(`?product=${product.id}`);
 }
 
 function CompetitorPrice({ price }) {
@@ -257,8 +258,8 @@ export function ProductPage({ product }) {
       <a className="skip-link" href="#product-main">К содержанию</a>
       <header className="detail-header">
         <div className="wrap detail-header-inner">
-          <a className="detail-back" href={backHref}>{backLabel}</a>
-          <a className="detail-campaign" href="./">Кофе и черешня</a>
+          <a className="detail-back" href={withMetricsPreference(backHref)}>{backLabel}</a>
+          <a className="detail-campaign" href={withMetricsPreference("./")}>Кофе и черешня</a>
           <ExperimentButton className="detail-store link-button" eventKind="site_click">Сайт РИВ ГОШ</ExperimentButton>
         </div>
       </header>
@@ -280,7 +281,7 @@ export function ProductPage({ product }) {
                 <CompetitorPrice price={product.competitorPrice} />
               </div>
             )}
-            {isGift && <a className="button button-dark" href="./#survey">Пройти опрос</a>}
+            {isGift && <a className="button button-dark" href={withMetricsPreference("./#survey")}>Пройти опрос</a>}
             <ExperimentButton className={isGift ? 'detail-pickup link-button' : 'button button-dark'}
               eventKind="site_click">Открыть на сайте РИВ ГОШ</ExperimentButton>
             {!isGift && <p className="fine-print">Цена приведена для демонстрации подборки.</p>}

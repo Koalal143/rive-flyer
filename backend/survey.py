@@ -135,6 +135,30 @@ def save_gift_survey(response: GiftSurveyResponse) -> GiftCode:
     return GiftCode(gift_code=saved[0])
 
 
+def render_gift_page(title: str, message: str, landing_url: str, status_code: int = 200) -> HTMLResponse:
+    return HTMLResponse(f"""<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title} — Учебный эксперимент</title>
+<main style="max-width:34rem;margin:12vh auto;padding:1.5rem;font:1rem/1.5 system-ui,sans-serif;color:#292024">
+<p style="font-weight:700;color:#862b4c">Учебный эксперимент</p>
+<h1>{title}</h1>
+<p>{message}</p>
+<a href="{landing_url}" style="color:#862b4c">На лендинг</a>
+</main>
+</html>""", status_code=status_code, headers=ADMIN_HEADERS)
+
+
+@router.get("/gift/demo", response_class=HTMLResponse, include_in_schema=False)
+def preview_gift() -> HTMLResponse:
+    return render_gift_page(
+        "Демонстрационный QR-код",
+        "Вы открыли страницу тестового кода учебного проекта.",
+        "/?ignore-metrics=true#survey",
+    )
+
+
 @router.get("/gift/{gift_code}", response_class=HTMLResponse, include_in_schema=False)
 def verify_gift(gift_code: UUID) -> HTMLResponse:
     try:
@@ -148,18 +172,7 @@ def verify_gift(gift_code: UUID) -> HTMLResponse:
     title = "Демонстрационный код подтверждён" if issued else "Код не найден"
     message = ("Код создан в учебном прототипе и не даёт права на получение подарка в РИВ ГОШ."
                if issued else "Проверьте QR-код, выданный после опроса.")
-    return HTMLResponse(f"""<!doctype html>
-<html lang="ru">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title} — Учебный эксперимент</title>
-<main style="max-width:34rem;margin:12vh auto;padding:1.5rem;font:1rem/1.5 system-ui,sans-serif;color:#292024">
-<p style="font-weight:700;color:#862b4c">Учебный эксперимент</p>
-<h1>{title}</h1>
-<p>{message}</p>
-<a href="/#survey" style="color:#862b4c">На лендинг</a>
-</main>
-</html>""", status_code=200 if issued else 404, headers=ADMIN_HEADERS)
+    return render_gift_page(title, message, "/#survey", 200 if issued else 404)
 
 
 def require_admin(request: Request, credentials: Annotated[HTTPBasicCredentials | None, Depends(basic_auth)]) -> None:
