@@ -10,7 +10,10 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 router = APIRouter(prefix="/api/analytics")
 logger = logging.getLogger("uvicorn.error")
-PRODUCTS = {"eva", "holika", "influence", "tangle", "celimax"}
+PRODUCTS = {
+    "eva", "holika", "influence", "tangle", "celimax",
+    "luxvisage", "universum", "loreal", "the-act-hand", "the-act-extra", "divage",
+}
 STORES = {"app_store", "google_play", "rustore"}
 
 

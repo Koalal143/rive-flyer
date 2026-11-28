@@ -124,7 +124,7 @@ function App() {
             <div className="hero-content">
               <p className="pilot-label">Учебный эксперимент</p>
               <h1 id="hero-title">Кофе с собой.<br />Бальзам в подарок.</h1>
-              <p className="hero-copy">Пройдите опрос, получите QR-код и заберите черешневый бальзам Eva Mosaic в РИВ ГОШ.</p>
+              <p className="hero-copy">Пройдите опрос и посмотрите, как выглядел бы QR-код на бесплатный бальзам Eva Mosaic в демоверсии акции</p>
               <p className="hero-note">
                 Без покупки в магазине, регистрации и карты лояльности.
                 <sup><a href="#prototype-note" aria-label="Примечание об учебном прототипе">*</a></sup>
